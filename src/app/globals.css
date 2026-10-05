@@ -1,0 +1,49 @@
+@import "tailwindcss";
+
+/*
+ * Echo design tokens. Use these utilities (bg-surface, text-muted, border-line,
+ * bg-accent, text-premium, ...) instead of hex values or Tailwind's default palette,
+ * which is intentionally disabled below.
+ */
+@theme {
+  --color-*: initial;
+  --color-white: #ffffff;
+  --color-black: #000000;
+
+  --color-background: #0b0f0d;
+  --color-surface: #151b18;
+  --color-elevated: #1c2420;
+  --color-line: #29312d;
+
+  --color-foreground: #f4f5f3;
+  --color-muted: #969d99;
+
+  --color-accent: #4f9d69;
+  --color-accent-hover: #63b27b;
+  --color-on-accent: #0b0f0d;
+
+  --color-premium: #d1b875;
+  --color-on-premium: #0b0f0d;
+
+  --color-danger: #d9796b;
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-foreground);
+}
+
+::selection {
+  background: color-mix(in srgb, var(--color-accent) 35%, transparent);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
