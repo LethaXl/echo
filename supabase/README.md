@@ -1,6 +1,35 @@
 # Supabase
 
-SQL migrations for Echo's database go in `supabase/migrations/`. No tables have been created yet; each table is added by the user story that needs it.
+SQL migrations for Echo's database go in `supabase/migrations/`. To apply one, paste it into Supabase Dashboard > SQL Editor and run it. Migrations are written to be safe to re-run.
+
+## Schema
+
+`20261005000000_initial_schema.sql` creates:
+
+| Table | Purpose | Who can access |
+| --- | --- | --- |
+| `profiles` | Name and role for each auth user (created automatically on sign-up) | Owner reads and updates `full_name` only; admins read all |
+| `subscription_plans` | Echo+ plans (seeded with Monthly and Annual) | Anyone reads active plans; admins manage |
+| `subscriptions` | Simulated Echo+ subscriptions | Owner reads; changes only via functions below |
+| `watchlist` | Saved titles | Owner reads, adds, removes |
+| `viewing_status` | Simulated viewing progress | Owner reads/deletes; writes require an active Echo+ subscription |
+| `ratings` | 1 to 5 rating per title | Owner only; averages via `get_rating_summary` |
+
+Database functions (call with `supabase.rpc(...)`):
+
+- `start_subscription(p_plan_id)` / `cancel_subscription()`: simulated subscribe and cancel; dates are set server-side
+- `has_active_subscription()`: whether the current user has Echo+
+- `get_rating_summary(p_tmdb_id, p_media_type)`: average rating and count, without exposing who rated
+- `delete_own_account()`: deletes the current user and all their data
+- `is_admin()`: whether the current user is an admin
+
+To pass a name at sign-up, use `supabase.auth.signUp({ email, password, options: { data: { full_name } } })`.
+
+To make someone an admin, run this in the SQL Editor (users cannot change their own role):
+
+```sql
+update public.profiles set role = 'admin' where id = '<user uuid from Authentication > Users>';
+```
 
 ## Data rules
 
