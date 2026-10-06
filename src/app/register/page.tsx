@@ -1,14 +1,19 @@
 import type { Metadata } from "next";
-import PlaceholderPage from "@/components/PlaceholderPage";
+import { redirect } from "next/navigation";
+import AuthPage from "@/components/auth/AuthPage";
+import SignUpForm from "@/components/auth/SignUpForm";
+import { getCurrentUser } from "@/lib/auth/session";
 
 export const metadata: Metadata = { title: "Sign Up" };
 
-export default function RegisterPage() {
+export default async function RegisterPage() {
+  if (await getCurrentUser()) {
+    redirect("/account");
+  }
+
   return (
-    <PlaceholderPage
-      title="Sign Up"
-      description="Account creation will be handled by Supabase Auth."
-      plannedStories={["US-01 Create an Account"]}
-    />
+    <AuthPage>
+      <SignUpForm />
+    </AuthPage>
   );
 }

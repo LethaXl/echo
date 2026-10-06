@@ -1,20 +1,24 @@
 import type { Metadata } from "next";
-import PlaceholderPage from "@/components/PlaceholderPage";
+import { redirect } from "next/navigation";
+import AccountSettings from "@/components/account/AccountSettings";
+import { getAccountDetails } from "@/lib/account/queries";
+import { getCurrentUser } from "@/lib/auth/session";
 
 export const metadata: Metadata = { title: "Account" };
 
-export default function AccountPage() {
+export default async function AccountPage() {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  const details = await getAccountDetails(user);
+
   return (
-    <PlaceholderPage
-      title="Account"
-      description="Signed-in users will manage their account details here."
-      plannedStories={[
-        "US-03 Log Out",
-        "US-05 Change My Password",
-        "US-06 View Account Details",
-        "US-07 Update My Name",
-        "US-08 Delete My Account",
-      ]}
-    />
+    <div className="mx-auto w-full max-w-xl motion-safe:animate-fade-in-up">
+      <h1 className="text-center text-2xl font-semibold tracking-tight">Account</h1>
+      <AccountSettings details={details} />
+    </div>
   );
 }

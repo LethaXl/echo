@@ -1,6 +1,8 @@
 import Link from "next/link";
-import ButtonLink from "@/components/ButtonLink";
+import ButtonLink, { buttonClassName } from "@/components/ButtonLink";
 import NavLink from "@/components/NavLink";
+import { logOut } from "@/lib/auth/actions";
+import { getCurrentUser } from "@/lib/auth/session";
 import { APP_NAME } from "@/lib/brand";
 
 const navLinks = [
@@ -9,7 +11,11 @@ const navLinks = [
   { href: "/plans", label: "Plans" },
 ];
 
-export default function Navbar() {
+const secondaryLinkClassName = "text-muted transition-colors hover:text-foreground";
+
+export default async function Navbar() {
+  const user = await getCurrentUser();
+
   return (
     <header className="border-b border-line bg-surface">
       <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-8">
@@ -26,13 +32,25 @@ export default function Navbar() {
           </ul>
         </div>
         <div className="flex items-center gap-5 text-sm">
-          <Link
-            href="/login"
-            className="text-muted transition-colors hover:text-foreground"
-          >
-            Log In
-          </Link>
-          <ButtonLink href="/register">Sign Up</ButtonLink>
+          {user ? (
+            <>
+              <Link href="/account" className={secondaryLinkClassName}>
+                Account
+              </Link>
+              <form action={logOut}>
+                <button type="submit" className={buttonClassName("secondary")}>
+                  Log Out
+                </button>
+              </form>
+            </>
+          ) : (
+            <>
+              <Link href="/login" className={secondaryLinkClassName}>
+                Log In
+              </Link>
+              <ButtonLink href="/register">Sign Up</ButtonLink>
+            </>
+          )}
         </div>
       </nav>
     </header>
