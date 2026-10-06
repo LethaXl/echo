@@ -1,5 +1,6 @@
 import "server-only";
 import type { User } from "@supabase/supabase-js";
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 
 export type ActiveSubscription = {
@@ -20,6 +21,18 @@ type SubscriptionRow = {
   current_period_end: string;
   plan: { name: string } | null;
 };
+
+export const getProfileName = cache(async (userId: string): Promise<string | null> => {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("full_name")
+    .eq("id", userId)
+    .maybeSingle<ProfileRow>();
+
+  if (error) console.error("Failed to load profile name:", error.message);
+  return data?.full_name ?? null;
+});
 
 export async function getAccountDetails(user: User): Promise<AccountDetails> {
   const supabase = await createClient();

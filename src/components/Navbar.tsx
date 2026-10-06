@@ -1,7 +1,9 @@
+import Image from "next/image";
 import Link from "next/link";
-import ButtonLink, { buttonClassName } from "@/components/ButtonLink";
+import ButtonLink from "@/components/ButtonLink";
 import NavLink from "@/components/NavLink";
-import { logOut } from "@/lib/auth/actions";
+import UserMenu from "@/components/UserMenu";
+import { getProfileName } from "@/lib/account/queries";
 import { getCurrentUser } from "@/lib/auth/session";
 import { APP_NAME } from "@/lib/brand";
 
@@ -11,19 +13,26 @@ const navLinks = [
   { href: "/plans", label: "Plans" },
 ];
 
-const secondaryLinkClassName = "text-muted transition-colors hover:text-foreground";
-
 export default async function Navbar() {
   const user = await getCurrentUser();
+  const profileName = user ? await getProfileName(user.id) : null;
+  const firstName = profileName?.trim().split(/\s+/)[0] || "Account";
 
   return (
     <header className="border-b border-line bg-surface">
-      <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-8">
-        <div className="flex items-center gap-10">
-          <Link href="/" className="text-xl font-bold tracking-tight">
-            {APP_NAME}
+      <nav className="mx-auto flex h-20 w-full max-w-[96rem] items-center justify-between px-10">
+        <div className="flex items-center gap-14">
+          <Link href="/" className="flex rounded-sm">
+            <Image
+              src="/echo-logo.png"
+              alt={APP_NAME}
+              width={447}
+              height={160}
+              preload
+              className="h-9 w-auto"
+            />
           </Link>
-          <ul className="flex items-center gap-6 text-sm">
+          <ul className="flex items-center gap-8 text-base">
             {navLinks.map((link) => (
               <li key={link.href}>
                 <NavLink href={link.href} label={link.label} />
@@ -31,27 +40,19 @@ export default async function Navbar() {
             ))}
           </ul>
         </div>
-        <div className="flex items-center gap-5 text-sm">
-          {user ? (
-            <>
-              <Link href="/account" className={secondaryLinkClassName}>
-                Account
-              </Link>
-              <form action={logOut}>
-                <button type="submit" className={buttonClassName("secondary")}>
-                  Log Out
-                </button>
-              </form>
-            </>
-          ) : (
-            <>
-              <Link href="/login" className={secondaryLinkClassName}>
-                Log In
-              </Link>
-              <ButtonLink href="/register">Sign Up</ButtonLink>
-            </>
-          )}
-        </div>
+        {user ? (
+          <UserMenu firstName={firstName} />
+        ) : (
+          <div className="flex items-center gap-6">
+            <Link
+              href="/login"
+              className="rounded-sm text-base font-medium text-muted transition-colors duration-150 hover:text-foreground"
+            >
+              Log In
+            </Link>
+            <ButtonLink href="/register">Sign Up</ButtonLink>
+          </div>
+        )}
       </nav>
     </header>
   );
