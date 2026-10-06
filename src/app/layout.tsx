@@ -23,7 +23,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en" className={`${inter.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col font-sans">
         <Navbar />
-        <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-8 py-6">
+        <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-8 py-6 has-[[data-layout=wide]]:max-w-[96rem] has-[[data-layout=wide]]:px-10">
           {children}
         </main>
         <Footer />

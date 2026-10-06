@@ -5,6 +5,16 @@ const DEFAULT_REVALIDATE_SECONDS = 60 * 60;
 
 type QueryParams = Record<string, string | number | boolean | undefined>;
 
+export class TmdbError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+  ) {
+    super(message);
+    this.name = "TmdbError";
+  }
+}
+
 export function isTmdbConfigured(): boolean {
   return Boolean(process.env.TMDB_API_TOKEN);
 }
@@ -34,7 +44,10 @@ export async function tmdbFetch<T>(
   });
 
   if (!response.ok) {
-    throw new Error(`TMDB request to ${path} failed with status ${response.status}.`);
+    throw new TmdbError(
+      `TMDB request to ${path} failed with status ${response.status}.`,
+      response.status,
+    );
   }
 
   return (await response.json()) as T;

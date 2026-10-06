@@ -40,6 +40,63 @@ export function EyeOffIcon(props: IconProps) {
   );
 }
 
+export function FilmIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <rect width="18" height="18" x="3" y="3" rx="2" />
+      <path d="M7 3v18M3 7.5h4M3 12h18M3 16.5h4M17 3v18M17 7.5h4M17 16.5h4" />
+    </Icon>
+  );
+}
+
+export function ClapperboardIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M20.2 6 3 11l-.9-2.4c-.3-1.1.3-2.2 1.3-2.5l13.5-4c1.1-.3 2.2.3 2.5 1.3Z" />
+      <path d="m6.2 5.3 3.1 3.9" />
+      <path d="m12.4 3.4 3.1 4" />
+      <path d="M3 11h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z" />
+    </Icon>
+  );
+}
+
+export function TvIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <rect width="20" height="15" x="2" y="7" rx="2" />
+      <path d="m17 2-5 5-5-5" />
+    </Icon>
+  );
+}
+
+export function RefreshIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
+      <path d="M21 3v5h-5" />
+    </Icon>
+  );
+}
+
+/** The three arcs from the Echo logo. */
+export function EchoWaveIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M7 8.5a5 5 0 0 1 0 7" />
+      <path d="M11.5 5.5a9 9 0 0 1 0 13" />
+      <path d="M16 2.5a13 13 0 0 1 0 19" />
+    </Icon>
+  );
+}
+
+export function StarIcon(props: IconProps) {
+  return (
+    <Icon fill="currentColor" strokeWidth={0} {...props}>
+      <path d="M12 2.5l2.94 5.96 6.56.95-4.75 4.63 1.12 6.54L12 17.5l-5.87 3.08 1.12-6.54L2.5 9.41l6.56-.95z" />
+    </Icon>
+  );
+}
+
 export function UserIcon(props: IconProps) {
   return (
     <Icon {...props}>
