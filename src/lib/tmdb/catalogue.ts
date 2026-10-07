@@ -2,8 +2,8 @@ import "server-only";
 import { isTmdbConfigured, tmdbFetch } from "@/lib/tmdb/client";
 import type {
   TmdbMovieResult,
+  TmdbMultiResult,
   TmdbPaginatedResponse,
-  TmdbTrendingResult,
   TmdbTvResult,
 } from "@/lib/tmdb/types";
 import type { CatalogueItem, MediaReference } from "@/types/media";
@@ -64,17 +64,105 @@ async function loadSection(
   }
 }
 
+/** Keeps movies and TV shows, dropping people. */
+function normalizeTitles(results: TmdbMultiResult[]): CatalogueItem[] {
+  return results.flatMap((result) => {
+    if (result.media_type === "movie") return [normalizeMovie(result)];
+    if (result.media_type === "tv") return [normalizeTvShow(result)];
+    return [];
+  });
+}
+
 export function getTrending() {
   return loadSection("trending titles", async () => {
-    const data = await tmdbFetch<TmdbPaginatedResponse<TmdbTrendingResult>>(
-      "/trending/all/week",
-      { language: LANGUAGE },
-    );
-    return data.results.flatMap((result) => {
-      if (result.media_type === "movie") return [normalizeMovie(result)];
-      if (result.media_type === "tv") return [normalizeTvShow(result)];
-      return [];
+    const data = await tmdbFetch<TmdbPaginatedResponse<TmdbMultiResult>>("/trending/all/week", {
+      language: LANGUAGE,
     });
+    return normalizeTitles(data.results);
+  });
+}
+
+const SEARCH_PAGES = 2;
+
+/** Lowercase, accent- and punctuation-free, without a leading article: "The Avengers" -> "avengers". */
+function comparableTitle(title: string): string {
+  return title
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim()
+    .replace(/^(the|a|an) /, "");
+}
+
+/**
+ * Higher is better. TMDB orders `/search/multi` by text relevance alone, which surfaces obscure
+ * exact matches above the titles people usually mean, so popularity and vote count lead and a
+ * close title match only nudges. Titles without a poster sink to the end.
+ */
+function searchScore(
+  result: TmdbMovieResult | TmdbTvResult,
+  title: string,
+  query: string,
+): number {
+  const candidate = comparableTitle(title);
+  const match =
+    candidate === query
+      ? 1.5
+      : candidate.startsWith(query)
+        ? 1
+        : candidate.includes(query)
+          ? 0.5
+          : 0;
+  return (
+    Math.log1p(result.popularity ?? 0) +
+    0.35 * Math.log1p(result.vote_count ?? 0) +
+    match -
+    (result.poster_path ? 0 : 3)
+  );
+}
+
+/**
+ * TMDB matches whole words only, so "avenger" never finds "The Avengers". Returns the query with
+ * its last word made plural (or singular), or null when that doesn't apply.
+ */
+function pluralVariant(query: string): string | null {
+  if (!/[a-z]{3,}$/i.test(query)) return null;
+  return /s$/i.test(query) ? query.slice(0, -1) : `${query}s`;
+}
+
+function searchMulti(query: string, page: number) {
+  return tmdbFetch<TmdbPaginatedResponse<TmdbMultiResult>>("/search/multi", {
+    query,
+    language: LANGUAGE,
+    include_adult: false,
+    page,
+  });
+}
+
+// US-15 Search by Title
+export function searchTitles(query: string) {
+  return loadSection("search results", async () => {
+    const variant = pluralVariant(query);
+    const pages = await Promise.all([
+      ...Array.from({ length: SEARCH_PAGES }, (_, index) => searchMulti(query, index + 1)),
+      ...(variant ? [searchMulti(variant, 1)] : []),
+    ]);
+
+    const target = comparableTitle(query);
+    const seen = new Set<string>();
+    return pages
+      .flatMap((page) => page.results)
+      .flatMap((result) => {
+        if (result.media_type === "person" || seen.has(`${result.media_type}-${result.id}`)) {
+          return [];
+        }
+        seen.add(`${result.media_type}-${result.id}`);
+        const item = result.media_type === "movie" ? normalizeMovie(result) : normalizeTvShow(result);
+        return [{ item, score: searchScore(result, item.title, target) }];
+      })
+      .sort((a, b) => b.score - a.score)
+      .map(({ item }) => item);
   });
 }
 

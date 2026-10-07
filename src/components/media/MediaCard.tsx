@@ -16,9 +16,17 @@ type MediaCardProps = {
   /** A short label pinned to the poster, e.g. the start of an Echo Trail. */
   tag?: string;
   showMediaType?: boolean;
+  /** Spells out the media type and always shows the TMDB rating, for mixed result grids. */
+  detailedMeta?: boolean;
 };
 
-export default function MediaCard({ item, rank, tag, showMediaType = true }: MediaCardProps) {
+export default function MediaCard({
+  item,
+  rank,
+  tag,
+  showMediaType = true,
+  detailedMeta = false,
+}: MediaCardProps) {
   const posterUrl = getTmdbImageUrl(item.posterPath, "w342");
   const mediaType = MEDIA_TYPES[item.mediaType];
 
@@ -53,7 +61,7 @@ export default function MediaCard({ item, rank, tag, showMediaType = true }: Med
             {tag}
           </span>
         )}
-        {item.tmdbRating !== null && (
+        {item.tmdbRating !== null && !detailedMeta && (
           <div
             aria-hidden="true"
             className="absolute inset-x-0 bottom-0 flex translate-y-full items-center justify-end gap-1 bg-background/85 px-2.5 py-1.5 text-[11px] font-medium text-foreground opacity-0 transition duration-200 ease-out group-hover:translate-y-0 group-hover:opacity-100"
@@ -67,18 +75,39 @@ export default function MediaCard({ item, rank, tag, showMediaType = true }: Med
       <h3 className="mt-2.5 truncate text-sm font-medium text-foreground" title={item.title}>
         {item.title}
       </h3>
-      <p className="mt-1 flex h-4 items-center gap-2 text-xs text-muted">
-        {item.year !== null && <span className="tabular-nums">{item.year}</span>}
-        {showMediaType && (
-          <span title={mediaType.label} className="flex">
-            <mediaType.Icon className="size-3.5" />
-            <span className="sr-only">{mediaType.label}</span>
-          </span>
-        )}
-        {item.tmdbRating !== null && (
-          <span className="sr-only">, TMDB rating {item.tmdbRating.toFixed(1)}</span>
-        )}
-      </p>
+      {detailedMeta ? (
+        <p className="mt-1 flex h-4 items-center gap-1.5 text-xs text-muted">
+          {item.year !== null && (
+            <>
+              <span className="tabular-nums">{item.year}</span>
+              <span aria-hidden="true" className="text-muted/50">
+                ·
+              </span>
+            </>
+          )}
+          <span>{mediaType.label}</span>
+          {item.tmdbRating !== null && (
+            <span className="ml-auto flex items-center gap-1 text-foreground/80 tabular-nums">
+              <StarIcon className="size-3 text-accent" />
+              {item.tmdbRating.toFixed(1)}
+              <span className="sr-only">TMDB rating</span>
+            </span>
+          )}
+        </p>
+      ) : (
+        <p className="mt-1 flex h-4 items-center gap-2 text-xs text-muted">
+          {item.year !== null && <span className="tabular-nums">{item.year}</span>}
+          {showMediaType && (
+            <span title={mediaType.label} className="flex">
+              <mediaType.Icon className="size-3.5" />
+              <span className="sr-only">{mediaType.label}</span>
+            </span>
+          )}
+          {item.tmdbRating !== null && (
+            <span className="sr-only">, TMDB rating {item.tmdbRating.toFixed(1)}</span>
+          )}
+        </p>
+      )}
     </>
   );
 

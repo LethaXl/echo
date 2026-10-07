@@ -1,4 +1,5 @@
 import { FilmIcon, StarIcon } from "@/components/icons";
+import EchoPlusAccess from "@/components/details/EchoPlusAccess";
 import TmdbImage from "@/components/details/TmdbImage";
 import { MEDIA_TYPES } from "@/components/media/media-types";
 import { formatCount } from "@/lib/format";
@@ -11,9 +12,11 @@ type TitleHeroProps = {
   /** Short facts shown under the title, e.g. year, runtime, genres. */
   meta: string[];
   facts: TitleFact[];
+  /** Whether the viewer has an active Echo+ subscription. */
+  hasEchoPlus: boolean;
 };
 
-export default function TitleHero({ title, meta, facts }: TitleHeroProps) {
+export default function TitleHero({ title, meta, facts, hasEchoPlus }: TitleHeroProps) {
   const mediaType = MEDIA_TYPES[title.mediaType];
 
   return (
@@ -69,6 +72,10 @@ export default function TitleHero({ title, meta, facts }: TitleHeroProps) {
             </span>
           </p>
         )}
+
+        <div className="mt-6">
+          <EchoPlusAccess hasEchoPlus={hasEchoPlus} />
+        </div>
 
         <div className="mt-8">
           {title.tagline && (

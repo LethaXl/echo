@@ -46,6 +46,13 @@ export function formatCount(value: number): string {
   return countFormatter.format(value);
 }
 
+const priceFormatter = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
+
+/** 999 → "$9.99". */
+export function formatPrice(cents: number): string {
+  return priceFormatter.format(cents / 100);
+}
+
 export function formatEpisodeCount(count: number): string {
   return `${formatCount(count)} ${count === 1 ? "episode" : "episodes"}`;
 }

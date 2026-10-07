@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
+import BrowseSearch from "@/components/media/BrowseSearch";
 import EchoTrail from "@/components/media/EchoTrail";
 import MediaRow from "@/components/media/MediaRow";
+import SearchResults from "@/components/media/SearchResults";
+import PageHeader from "@/components/PageHeader";
+import { normalizeSearchQuery } from "@/lib/search";
 import {
   getEchoPicks,
   getEchoTrail,
@@ -17,8 +21,7 @@ function parseEchoIndex(value: string | string[] | undefined, count: number): nu
   return count > 0 && Number.isFinite(index) && index >= 0 ? index % count : 0;
 }
 
-export default async function BrowsePage({ searchParams }: PageProps<"/browse">) {
-  const { echo } = await searchParams;
+async function BrowseDiscovery({ echo }: { echo: string | string[] | undefined }) {
   const [trending, echoPicks, popularMovies, popularTvShows] = await Promise.all([
     getTrending(),
     getEchoPicks(),
@@ -32,43 +35,41 @@ export default async function BrowsePage({ searchParams }: PageProps<"/browse">)
   const echoTrail = echoStart ? await getEchoTrail(echoStart) : [];
 
   return (
-    <div data-layout="wide" className="pt-2 pb-4 motion-safe:animate-fade-in-up">
-      <header className="flex gap-4">
-        <div aria-hidden="true" className="flex gap-[3px]">
-          <span className="w-0.5 rounded-full bg-accent/15" />
-          <span className="w-0.5 rounded-full bg-accent/45" />
-          <span className="w-0.5 rounded-full bg-accent" />
-        </div>
-        <div>
-          <p className="text-[11px] leading-none font-semibold tracking-[0.18em] text-accent uppercase">
-            Browse
-          </p>
-          <h1 className="mt-2 text-[1.75rem] leading-tight font-semibold tracking-tight">
-            Find something to watch
-          </h1>
-          <p className="mt-1 text-[0.9375rem] text-muted">
-            Trending titles, standout picks and more to explore.
-          </p>
-        </div>
-      </header>
-
-      <div className="mt-9 flex flex-col gap-14">
-        <MediaRow title="Trending Now" items={trending} ranked />
-        <EchoTrail
-          start={echoStart}
-          related={echoTrail}
-          nextHref={
-            echoStarts.length > 1 ? `/browse?echo=${(echoIndex + 1) % echoStarts.length}` : null
-          }
-        />
-        <MediaRow title="Echo Picks" echoMark items={echoPicks} />
-        <div className="border-t border-line pt-10">
-          <MediaRow title="Popular Movies" items={popularMovies} showMediaType={false} />
-        </div>
-        <div className="border-t border-line pt-10">
-          <MediaRow title="Popular TV Shows" items={popularTvShows} showMediaType={false} />
-        </div>
+    <div className="flex flex-col gap-14">
+      <MediaRow title="Trending Now" items={trending} ranked />
+      <EchoTrail
+        start={echoStart}
+        related={echoTrail}
+        nextHref={
+          echoStarts.length > 1 ? `/browse?echo=${(echoIndex + 1) % echoStarts.length}` : null
+        }
+      />
+      <MediaRow title="Echo Picks" echoMark items={echoPicks} />
+      <div className="border-t border-line pt-10">
+        <MediaRow title="Popular Movies" items={popularMovies} showMediaType={false} />
       </div>
+      <div className="border-t border-line pt-10">
+        <MediaRow title="Popular TV Shows" items={popularTvShows} showMediaType={false} />
+      </div>
+    </div>
+  );
+}
+
+export default async function BrowsePage({ searchParams }: PageProps<"/browse">) {
+  const { echo, q } = await searchParams;
+  const query = normalizeSearchQuery(q);
+
+  return (
+    <div data-layout="wide" className="pt-2 pb-4 motion-safe:animate-fade-in-up">
+      <PageHeader
+        eyebrow="Browse"
+        title="Find something to watch"
+        description="Trending titles, standout picks and more to explore."
+      />
+
+      <BrowseSearch query={query}>
+        {query ? <SearchResults query={query} /> : <BrowseDiscovery echo={echo} />}
+      </BrowseSearch>
     </div>
   );
 }

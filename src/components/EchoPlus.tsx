@@ -4,7 +4,7 @@ export default function EchoPlus() {
   return (
     <span className="font-semibold text-foreground">
       {APP_NAME}
-      <span className="text-premium">+</span>
+      <span className="text-accent">+</span>
     </span>
   );
 }

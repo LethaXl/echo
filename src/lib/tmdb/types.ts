@@ -13,6 +13,8 @@ export type TmdbMovieResult = {
   release_date?: string;
   poster_path: string | null;
   vote_average?: number;
+  vote_count?: number;
+  popularity?: number;
 };
 
 export type TmdbTvResult = {
@@ -21,6 +23,8 @@ export type TmdbTvResult = {
   first_air_date?: string;
   poster_path: string | null;
   vote_average?: number;
+  vote_count?: number;
+  popularity?: number;
 };
 
 type TmdbNamed = { id: number; name: string };
@@ -103,8 +107,8 @@ export type TmdbSeasonDetails = {
   }[];
 };
 
-/** `/trending/all` mixes movies, TV shows and people, tagged by `media_type`. */
-export type TmdbTrendingResult =
+/** `/trending/all` and `/search/multi` mix movies, TV shows and people, tagged by `media_type`. */
+export type TmdbMultiResult =
   | (TmdbMovieResult & { media_type: "movie" })
   | (TmdbTvResult & { media_type: "tv" })
   | { id: number; media_type: "person" };
