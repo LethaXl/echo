@@ -61,13 +61,16 @@ export default async function BrowsePage({ searchParams }: PageProps<"/browse">)
 
   return (
     <div data-layout="wide" className="pt-2 pb-4 motion-safe:animate-fade-in-up">
-      <PageHeader
-        eyebrow="Browse"
-        title="Find something to watch"
-        description="Trending titles, standout picks and more to explore."
-      />
-
-      <BrowseSearch query={query}>
+      <BrowseSearch
+        query={query}
+        header={
+          <PageHeader
+            eyebrow="Browse"
+            title="Find something to watch"
+            description="Trending titles, standout picks and more to explore."
+          />
+        }
+      >
         {query ? <SearchResults query={query} /> : <BrowseDiscovery echo={echo} />}
       </BrowseSearch>
     </div>

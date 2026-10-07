@@ -254,6 +254,19 @@ export async function getEchoTrail(start: CatalogueItem): Promise<CatalogueItem[
   return trail;
 }
 
+/** Specific titles by TMDB ID, in the order given. */
+export function getTitles(references: MediaReference[]) {
+  return loadSection("selected titles", () =>
+    Promise.all(
+      references.map(({ mediaType, tmdbId }) =>
+        mediaType === "movie"
+          ? tmdbFetch<TmdbMovieResult>(`/movie/${tmdbId}`, { language: LANGUAGE }).then(normalizeMovie)
+          : tmdbFetch<TmdbTvResult>(`/tv/${tmdbId}`, { language: LANGUAGE }).then(normalizeTvShow),
+      ),
+    ),
+  );
+}
+
 export function getPopularMovies() {
   return loadSection("popular movies", async () => {
     const data = await tmdbFetch<TmdbPaginatedResponse<TmdbMovieResult>>("/movie/popular", {
