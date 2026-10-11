@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
+import BrowseResults from "@/components/media/BrowseResults";
 import BrowseSearch from "@/components/media/BrowseSearch";
 import EchoTrail from "@/components/media/EchoTrail";
 import MediaRow from "@/components/media/MediaRow";
-import SearchResults from "@/components/media/SearchResults";
 import PageHeader from "@/components/PageHeader";
+import { isFiltered, parseBrowseFilters } from "@/lib/browse";
 import { normalizeSearchQuery } from "@/lib/search";
 import {
   getEchoPicks,
@@ -56,13 +57,15 @@ async function BrowseDiscovery({ echo }: { echo: string | string[] | undefined }
 }
 
 export default async function BrowsePage({ searchParams }: PageProps<"/browse">) {
-  const { echo, q } = await searchParams;
-  const query = normalizeSearchQuery(q);
+  const params = await searchParams;
+  const query = normalizeSearchQuery(params.q);
+  const filters = parseBrowseFilters(params);
 
   return (
     <div data-layout="wide" className="pt-2 pb-4 motion-safe:animate-fade-in-up">
       <BrowseSearch
         query={query}
+        filters={filters}
         header={
           <PageHeader
             eyebrow="Browse"
@@ -71,7 +74,11 @@ export default async function BrowsePage({ searchParams }: PageProps<"/browse">)
           />
         }
       >
-        {query ? <SearchResults query={query} /> : <BrowseDiscovery echo={echo} />}
+        {query || isFiltered(filters) ? (
+          <BrowseResults query={query} filters={filters} />
+        ) : (
+          <BrowseDiscovery echo={params.echo} />
+        )}
       </BrowseSearch>
     </div>
   );

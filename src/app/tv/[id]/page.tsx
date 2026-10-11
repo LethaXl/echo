@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import CastList from "@/components/details/CastList";
-import DetailsBackLink from "@/components/details/DetailsBackLink";
+import BrowseBackLink from "@/components/details/BrowseBackLink";
 import SeasonGrid from "@/components/details/SeasonGrid";
 import TitleHero, { type TitleFact } from "@/components/details/TitleHero";
 import { formatCalendarDate, formatCount, formatLanguage, formatRuntime } from "@/lib/format";
@@ -73,7 +73,7 @@ export default async function TvShowPage({ params }: PageProps<"/tv/[id]">) {
 
   return (
     <div data-layout="wide" className="pt-2 pb-10 motion-safe:animate-fade-in-up">
-      <DetailsBackLink href="/browse" label="Back to Browse" />
+      <BrowseBackLink label="Back to Browse" />
       <div className="mt-6">
         <TitleHero
           title={show}

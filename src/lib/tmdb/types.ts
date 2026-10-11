@@ -10,21 +10,27 @@ export type TmdbPaginatedResponse<T> = {
 export type TmdbMovieResult = {
   id: number;
   title: string;
+  original_title?: string;
   release_date?: string;
   poster_path: string | null;
   vote_average?: number;
   vote_count?: number;
   popularity?: number;
+  /** Present on list results (search, discover), not on `/movie/{id}`. */
+  genre_ids?: number[];
 };
 
 export type TmdbTvResult = {
   id: number;
   name: string;
+  original_name?: string;
   first_air_date?: string;
   poster_path: string | null;
   vote_average?: number;
   vote_count?: number;
   popularity?: number;
+  /** Present on list results (search, discover), not on `/tv/{id}`. */
+  genre_ids?: number[];
 };
 
 type TmdbNamed = { id: number; name: string };

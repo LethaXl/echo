@@ -1,12 +1,12 @@
 "use client";
 
 import { buttonClassName } from "@/components/ButtonLink";
-import DetailsBackLink from "@/components/details/DetailsBackLink";
+import BrowseBackLink from "@/components/details/BrowseBackLink";
 
 export default function DetailsError({ retry }: { retry: () => void }) {
   return (
     <div data-layout="wide" className="pt-2 pb-8">
-      <DetailsBackLink href="/browse" label="Browse" />
+      <BrowseBackLink label="Browse" />
       <div className="mt-10 max-w-md">
         <h1 className="text-2xl font-semibold tracking-tight">This page couldn&apos;t be loaded</h1>
         <p className="mt-2 text-muted">

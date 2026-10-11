@@ -1,4 +1,10 @@
 import "server-only";
+import {
+  type BrowseFilters,
+  type BrowseSort,
+  DEFAULT_FILTERS,
+  genreIdFor,
+} from "@/lib/browse";
 import { isTmdbConfigured, tmdbFetch } from "@/lib/tmdb/client";
 import type {
   TmdbMovieResult,
@@ -6,9 +12,14 @@ import type {
   TmdbPaginatedResponse,
   TmdbTvResult,
 } from "@/lib/tmdb/types";
-import type { CatalogueItem, MediaReference } from "@/types/media";
+import type { CatalogueItem, MediaReference, MediaType } from "@/types/media";
 
 const LANGUAGE = "en-US";
+
+/** TMDB TV genre IDs for News, Reality and Talk, which otherwise dominate `/tv/popular`. */
+const EXCLUDED_TV_GENRES = "10763,10764,10767";
+
+const itemKey = (item: MediaReference) => `${item.mediaType}-${item.tmdbId}`;
 
 export function parseYear(date: string | null | undefined): number | null {
   const year = Number.parseInt(date?.slice(0, 4) ?? "", 10);
@@ -131,43 +142,278 @@ function pluralVariant(query: string): string | null {
   return /s$/i.test(query) ? query.slice(0, -1) : `${query}s`;
 }
 
-function searchMulti(query: string, page: number) {
-  return tmdbFetch<TmdbPaginatedResponse<TmdbMultiResult>>("/search/multi", {
+/** A listed title plus the raw TMDB fields Browse filters and sorts on. */
+type Candidate = {
+  item: CatalogueItem;
+  /** "YYYY-MM-DD", or null when TMDB has no date. */
+  date: string | null;
+  genreIds: number[];
+  popularity: number;
+  score: number;
+  /** Whether the shown title is also the original one, which TMDB's A–Z ordering uses. */
+  originalTitle: boolean;
+};
+
+function movieCandidate(result: TmdbMovieResult, query = ""): Candidate {
+  const item = normalizeMovie(result);
+  return {
+    item,
+    date: result.release_date || null,
+    genreIds: result.genre_ids ?? [],
+    popularity: result.popularity ?? 0,
+    score: query ? searchScore(result, item.title, query) : 0,
+    originalTitle: (result.original_title ?? result.title) === result.title,
+  };
+}
+
+function tvCandidate(result: TmdbTvResult, query = ""): Candidate {
+  const item = normalizeTvShow(result);
+  return {
+    item,
+    date: result.first_air_date || null,
+    genreIds: result.genre_ids ?? [],
+    popularity: result.popularity ?? 0,
+    score: query ? searchScore(result, item.title, query) : 0,
+    originalTitle: (result.original_name ?? result.name) === result.name,
+  };
+}
+
+function matchesFilters({ item, genreIds }: Candidate, filters: BrowseFilters): boolean {
+  if (filters.type !== "all" && item.mediaType !== filters.type) return false;
+  // Titles without a release date can't be placed in a year.
+  if (filters.year !== null && item.year !== filters.year) return false;
+  if (filters.genre) {
+    const genreId = genreIdFor(filters.genre, item.mediaType);
+    if (genreId === null || !genreIds.includes(genreId)) return false;
+  }
+  return true;
+}
+
+const today = () => new Date().toISOString().slice(0, 10);
+
+const titleCollator = new Intl.Collator("en", {
+  sensitivity: "base",
+  numeric: true,
+  ignorePunctuation: true,
+});
+
+/**
+ * Null for "popular", which keeps the incoming order. "newest" puts released titles newest first,
+ * then upcoming and undated ones, so unreleased titles don't crowd out what's already out.
+ */
+function candidateComparator(sort: BrowseSort): ((a: Candidate, b: Candidate) => number) | null {
+  if (sort === "title") return (a, b) => titleCollator.compare(a.item.title, b.item.title);
+  if (sort === "newest") {
+    const cutoff = today();
+    const rank = ({ date }: Candidate) => (date === null ? 2 : date > cutoff ? 1 : 0);
+    return (a, b) =>
+      rank(a) - rank(b) || (b.date ?? "").localeCompare(a.date ?? "") || b.popularity - a.popularity;
+  }
+  return null;
+}
+
+function sortCandidates(candidates: Candidate[], sort: BrowseSort): Candidate[] {
+  const compare = candidateComparator(sort);
+  return compare ? candidates.toSorted(compare) : candidates;
+}
+
+function uniqueCandidates(candidates: Candidate[]): Candidate[] {
+  const seen = new Set<string>();
+  return candidates.filter(({ item }) => {
+    const key = itemKey(item);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+async function searchByType(
+  mediaType: MediaType,
+  query: string,
+  page: number,
+  year: number | null,
+  target: string,
+): Promise<Candidate[]> {
+  const params = { query, language: LANGUAGE, include_adult: false, page };
+  if (mediaType === "movie") {
+    const data = await tmdbFetch<TmdbPaginatedResponse<TmdbMovieResult>>("/search/movie", {
+      ...params,
+      primary_release_year: year ?? undefined,
+    });
+    return data.results.map((result) => movieCandidate(result, target));
+  }
+  const data = await tmdbFetch<TmdbPaginatedResponse<TmdbTvResult>>("/search/tv", {
+    ...params,
+    first_air_date_year: year ?? undefined,
+  });
+  return data.results.map((result) => tvCandidate(result, target));
+}
+
+async function searchAll(query: string, page: number, target: string): Promise<Candidate[]> {
+  const data = await tmdbFetch<TmdbPaginatedResponse<TmdbMultiResult>>("/search/multi", {
     query,
     language: LANGUAGE,
     include_adult: false,
     page,
   });
-}
-
-// US-15 Search by Title
-export function searchTitles(query: string) {
-  return loadSection("search results", async () => {
-    const variant = pluralVariant(query);
-    const pages = await Promise.all([
-      ...Array.from({ length: SEARCH_PAGES }, (_, index) => searchMulti(query, index + 1)),
-      ...(variant ? [searchMulti(variant, 1)] : []),
-    ]);
-
-    const target = comparableTitle(query);
-    const seen = new Set<string>();
-    return pages
-      .flatMap((page) => page.results)
-      .flatMap((result) => {
-        if (result.media_type === "person" || seen.has(`${result.media_type}-${result.id}`)) {
-          return [];
-        }
-        seen.add(`${result.media_type}-${result.id}`);
-        const item = result.media_type === "movie" ? normalizeMovie(result) : normalizeTvShow(result);
-        return [{ item, score: searchScore(result, item.title, target) }];
-      })
-      .sort((a, b) => b.score - a.score)
-      .map(({ item }) => item);
+  return data.results.flatMap((result) => {
+    if (result.media_type === "movie") return [movieCandidate(result, target)];
+    if (result.media_type === "tv") return [tvCandidate(result, target)];
+    return [];
   });
 }
 
-/** TMDB TV genre IDs for News, Reality and Talk, which otherwise dominate `/tv/popular`. */
-const EXCLUDED_TV_GENRES = "10763,10764,10767";
+/**
+ * US-15 Search by Title, US-21 Combine Search and Filters.
+ *
+ * `/search/multi` takes no type or year, so those switch to `/search/movie` and `/search/tv`,
+ * which do. No search endpoint takes a genre, so genre is matched on each result's genre IDs.
+ */
+export function searchTitles(query: string, filters: BrowseFilters = DEFAULT_FILTERS) {
+  return loadSection("search results", async () => {
+    const target = comparableTitle(query);
+    const variant = pluralVariant(query);
+    const requests = [
+      ...Array.from({ length: SEARCH_PAGES }, (_, index) => ({ text: query, page: index + 1 })),
+      ...(variant ? [{ text: variant, page: 1 }] : []),
+    ];
+    const types: MediaType[] = filters.type === "all" ? ["movie", "tv"] : [filters.type];
+    const useMulti = filters.type === "all" && filters.year === null;
+
+    const pages = await Promise.all(
+      requests.flatMap(({ text, page }) =>
+        useMulti
+          ? [searchAll(text, page, target)]
+          : types.map((mediaType) => searchByType(mediaType, text, page, filters.year, target)),
+      ),
+    );
+
+    const matches = uniqueCandidates(pages.flat())
+      .filter((candidate) => matchesFilters(candidate, filters))
+      .sort((a, b) => b.score - a.score);
+    return sortCandidates(matches, filters.sort).map(({ item }) => item);
+  });
+}
+
+/** A–Z gets a page more so it reaches past the titles starting with digits. */
+const DISCOVER_PAGES: Record<BrowseSort, number> = { popular: 2, newest: 2, title: 3 };
+
+const DISCOVER_SORT: Record<MediaType, Record<BrowseSort, string>> = {
+  movie: { popular: "popularity.desc", title: "title.asc", newest: "primary_release_date.desc" },
+  tv: { popular: "popularity.desc", title: "name.asc", newest: "first_air_date.desc" },
+};
+
+/** Keeps near-empty TMDB entries out, which matters most for newest-first. */
+const DISCOVER_MIN_VOTES: Record<MediaType, number> = { movie: 10, tv: 5 };
+
+/**
+ * TMDB's full alphabetical list is dominated by barely-rated titles, so A–Z is the alphabetical
+ * list of titles people have actually rated. Within a single year far fewer titles qualify.
+ */
+const TITLE_SORT_MIN_VOTES: Record<"anyYear" | "oneYear", Record<MediaType, number>> = {
+  anyYear: { movie: 1000, tv: 300 },
+  oneYear: { movie: 100, tv: 50 },
+};
+
+function minVotes(mediaType: MediaType, filters: BrowseFilters): number {
+  if (filters.sort !== "title") return DISCOVER_MIN_VOTES[mediaType];
+  return TITLE_SORT_MIN_VOTES[filters.year === null ? "anyYear" : "oneYear"][mediaType];
+}
+
+type DiscoverPage = { candidates: Candidate[]; hasMore: boolean };
+
+async function discoverByType(
+  mediaType: MediaType,
+  filters: BrowseFilters,
+  page: number,
+): Promise<DiscoverPage> {
+  const genre = genreIdFor(filters.genre, mediaType);
+  // Only newest is capped at today: unreleased titles would otherwise fill the whole list.
+  const releasedBy = filters.sort === "newest" ? today() : undefined;
+  const params = {
+    language: LANGUAGE,
+    include_adult: false,
+    sort_by: DISCOVER_SORT[mediaType][filters.sort],
+    "vote_count.gte": minVotes(mediaType, filters),
+    with_genres: genre ?? undefined,
+    page,
+  };
+
+  if (mediaType === "movie") {
+    const data = await tmdbFetch<TmdbPaginatedResponse<TmdbMovieResult>>("/discover/movie", {
+      ...params,
+      primary_release_year: filters.year ?? undefined,
+      "primary_release_date.lte": releasedBy,
+    });
+    return {
+      candidates: data.results.map((result) => movieCandidate(result)),
+      hasMore: data.page < data.total_pages,
+    };
+  }
+  const data = await tmdbFetch<TmdbPaginatedResponse<TmdbTvResult>>("/discover/tv", {
+    ...params,
+    first_air_date_year: filters.year ?? undefined,
+    "first_air_date.lte": releasedBy,
+    include_null_first_air_dates: false,
+    // News and Talk stay out; Reality only when it's the genre asked for.
+    without_genres: filters.genre === "reality" ? "10763,10767" : EXCLUDED_TV_GENRES,
+  });
+  return {
+    candidates: data.results.map((result) => tvCandidate(result)),
+    hasMore: data.page < data.total_pages,
+  };
+}
+
+/**
+ * US-16 to US-20: filtered, sorted titles without a search, from TMDB's discover endpoints,
+ * which apply type, genre, year and sort across TMDB's whole catalogue. A genre that doesn't
+ * exist for a type (e.g. Horror for TV) skips that type instead of requesting everything.
+ */
+export function discoverTitles(filters: BrowseFilters) {
+  return loadSection("filtered titles", async () => {
+    const types = (filters.type === "all" ? (["movie", "tv"] as const) : [filters.type]).filter(
+      (mediaType) => filters.genre === null || genreIdFor(filters.genre, mediaType) !== null,
+    );
+    const lists = await Promise.all(
+      types.map(async (mediaType) => {
+        const pages = await Promise.all(
+          Array.from({ length: DISCOVER_PAGES[filters.sort] }, (_, index) =>
+            discoverByType(mediaType, filters, index + 1),
+          ),
+        );
+        return {
+          candidates: pages.flatMap((page) => page.candidates),
+          hasMore: pages.at(-1)?.hasMore ?? false,
+        };
+      }),
+    );
+
+    const matches = uniqueCandidates(lists.flatMap((list) => list.candidates)).filter(
+      (candidate) => matchesFilters(candidate, filters),
+    );
+    const compare = candidateComparator(filters.sort);
+    if (!compare) {
+      // Movies and shows arrive as two separately sorted lists; merge them by popularity.
+      return matches.toSorted((a, b) => b.popularity - a.popularity).map(({ item }) => item);
+    }
+
+    // Each list is only the first pages of TMDB's order, so anything sorting after the last title
+    // of a list with more pages could be preceded by titles that weren't fetched. Cutting there
+    // keeps the merged list in true order across movies and shows. TMDB's A–Z goes by original
+    // title, so only titles shown under their original name mark how far it got.
+    const boundaries = lists.flatMap(({ candidates, hasMore }) => {
+      const last = candidates.findLast(
+        (candidate) => filters.sort !== "title" || candidate.originalTitle,
+      );
+      return hasMore && last ? [last] : [];
+    });
+    const cutoff = boundaries.toSorted(compare)[0];
+    return matches
+      .toSorted(compare)
+      .filter((candidate) => !cutoff || compare(candidate, cutoff) <= 0)
+      .map(({ item }) => item);
+  });
+}
 
 const ECHO_PICKS_YEARS = 5;
 
@@ -203,8 +449,6 @@ export function getEchoPicks() {
 }
 
 const ECHO_TRAIL_LENGTH = 5;
-
-const itemKey = (item: MediaReference) => `${item.mediaType}-${item.tmdbId}`;
 
 /** TMDB recommendations for a title, falling back to TMDB's "similar" list when empty. */
 async function getRelatedOf<T>(
