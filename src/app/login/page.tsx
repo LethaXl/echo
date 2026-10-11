@@ -4,22 +4,30 @@ import AuthPage from "@/components/auth/AuthPage";
 import AuthSwitchLink from "@/components/auth/AuthSwitchLink";
 import LoginForm from "@/components/auth/LoginForm";
 import FormMessage from "@/components/forms/FormMessage";
+import { safeNextPath } from "@/lib/auth/redirect";
 import { getCurrentUser } from "@/lib/auth/session";
 import { APP_NAME } from "@/lib/brand";
 
 export const metadata: Metadata = { title: "Log In" };
 
 export default async function LoginPage({ searchParams }: PageProps<"/login">) {
+  const { error, next: nextParam } = await searchParams;
+  const next = safeNextPath(nextParam);
+
   if (await getCurrentUser()) {
-    redirect("/account");
+    redirect(next ?? "/account");
   }
 
-  const { error } = await searchParams;
+  const subscribing = next?.startsWith("/plans") ?? false;
 
   return (
     <AuthPage
       title={`Log in to ${APP_NAME}`}
-      description="Welcome back. Pick up where you left off."
+      description={
+        subscribing
+          ? `Log in to subscribe to ${APP_NAME}+.`
+          : "Welcome back. Pick up where you left off."
+      }
       footer={
         <AuthSwitchLink prompt={`New to ${APP_NAME}?`} href="/register" label="Create an account" />
       }
@@ -34,7 +42,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
           />
         </div>
       )}
-      <LoginForm />
+      <LoginForm next={next} />
     </AuthPage>
   );
 }

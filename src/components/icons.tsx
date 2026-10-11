@@ -97,6 +97,15 @@ export function CalendarIcon(props: IconProps) {
   );
 }
 
+export function CreditCardIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <rect width="20" height="14" x="2" y="5" rx="2" />
+      <path d="M2 10h20" />
+    </Icon>
+  );
+}
+
 export function ArrowUpDownIcon(props: IconProps) {
   return (
     <Icon {...props}>

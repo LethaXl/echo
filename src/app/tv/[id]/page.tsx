@@ -6,7 +6,7 @@ import SeasonGrid from "@/components/details/SeasonGrid";
 import TitleHero, { type TitleFact } from "@/components/details/TitleHero";
 import { formatCalendarDate, formatCount, formatLanguage, formatRuntime } from "@/lib/format";
 import { parseRouteNumber } from "@/lib/media-routes";
-import { getCurrentSubscription } from "@/lib/subscriptions/queries";
+import { hasEchoPlus } from "@/lib/subscriptions/queries";
 import { parseYear } from "@/lib/tmdb/catalogue";
 import { getTvShowDetails } from "@/lib/tmdb/details";
 import type { TvShowDetails } from "@/types/media";
@@ -62,7 +62,7 @@ function showFacts(show: TvShowDetails): TitleFact[] {
 
 // US-10 View Content Details (TV shows), with US-11 View Show Seasons
 export default async function TvShowPage({ params }: PageProps<"/tv/[id]">) {
-  const [show, subscription] = await Promise.all([loadShow(params), getCurrentSubscription()]);
+  const [show, echoPlus] = await Promise.all([loadShow(params), hasEchoPlus()]);
   const meta = [
     airYears(show),
     show.seasonCount > 0
@@ -79,7 +79,7 @@ export default async function TvShowPage({ params }: PageProps<"/tv/[id]">) {
           title={show}
           meta={meta}
           facts={showFacts(show)}
-          hasEchoPlus={subscription !== null}
+          hasEchoPlus={echoPlus}
         />
       </div>
       <div className="mt-18 flex flex-col gap-18">

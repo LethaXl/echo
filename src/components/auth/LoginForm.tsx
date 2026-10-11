@@ -10,7 +10,8 @@ import { logIn } from "@/lib/auth/actions";
 import { initialFormState } from "@/lib/auth/form-state";
 import { validateLogInForm } from "@/lib/auth/validation";
 
-export default function LoginForm() {
+/** `next` is where to go after logging in; the server action re-checks it. */
+export default function LoginForm({ next }: { next?: string | null }) {
   const [state, formAction] = useActionState(logIn, initialFormState);
   const { formProps, errorFor, toast } = useFieldErrors(state, validateLogInForm);
 
@@ -18,6 +19,7 @@ export default function LoginForm() {
     <>
       {toast}
       <form action={formAction} {...formProps} className="flex flex-col gap-3">
+        {next && <input type="hidden" name="next" value={next} />}
         <TextField
           label="Email"
           name="email"

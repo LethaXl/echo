@@ -5,7 +5,7 @@ import BrowseBackLink from "@/components/details/BrowseBackLink";
 import TitleHero, { type TitleFact } from "@/components/details/TitleHero";
 import { formatCalendarDate, formatLanguage, formatRuntime } from "@/lib/format";
 import { parseRouteNumber } from "@/lib/media-routes";
-import { getCurrentSubscription } from "@/lib/subscriptions/queries";
+import { hasEchoPlus } from "@/lib/subscriptions/queries";
 import { getMovieDetails } from "@/lib/tmdb/details";
 import type { MovieDetails } from "@/types/media";
 
@@ -44,7 +44,7 @@ function movieFacts(movie: MovieDetails): TitleFact[] {
 
 // US-10 View Content Details (movies)
 export default async function MoviePage({ params }: PageProps<"/movie/[id]">) {
-  const [movie, subscription] = await Promise.all([loadMovie(params), getCurrentSubscription()]);
+  const [movie, echoPlus] = await Promise.all([loadMovie(params), hasEchoPlus()]);
   const meta = [
     movie.year?.toString(),
     movie.runtime ? formatRuntime(movie.runtime) : undefined,
@@ -59,7 +59,7 @@ export default async function MoviePage({ params }: PageProps<"/movie/[id]">) {
           title={movie}
           meta={meta}
           facts={movieFacts(movie)}
-          hasEchoPlus={subscription !== null}
+          hasEchoPlus={echoPlus}
         />
       </div>
       <div className="mt-18">

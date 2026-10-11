@@ -1,105 +1,164 @@
 "use client";
 
 import { useState } from "react";
+import ButtonLink, { buttonClassName } from "@/components/ButtonLink";
 import EchoPlus from "@/components/EchoPlus";
 import PlanCard, {
   CurrentPlanStatus,
   FeatureItem,
   PLAN_FEATURES,
   PlanPrice,
+  PlanStatus,
 } from "@/components/plans/PlanCard";
-import PlanChoiceButton from "@/components/plans/PlanChoiceButton";
+import SubscribeDialog from "@/components/plans/SubscribeDialog";
 import { APP_NAME } from "@/lib/brand";
 import { formatPrice } from "@/lib/format";
-
-/** One way to pay for Echo+, e.g. monthly. Every option includes the same features. */
-export type BillingOption = {
-  planId: string;
-  label: string;
-  unit: string;
-  priceCents: number;
-  description: string;
-  /** Savings over a year of the monthly option, in cents. */
-  savingsCents: number;
-};
+import {
+  billingParam,
+  type BillingInterval,
+  type BillingOption,
+} from "@/lib/subscriptions/plans";
 
 type EchoPlusPlanCardProps = {
   options: BillingOption[];
   currentPlanId: string | null;
+  signedIn: boolean;
+  /** Billing option to show first, e.g. the one picked before logging in. */
+  initialInterval: BillingInterval | null;
 };
 
-export default function EchoPlusPlanCard({ options, currentPlanId }: EchoPlusPlanCardProps) {
+// US-23 Compare Subscription Plans, US-24 Subscribe to a Plan
+export default function EchoPlusPlanCard({
+  options,
+  currentPlanId,
+  signedIn,
+  initialInterval,
+}: EchoPlusPlanCardProps) {
   const [selectedId, setSelectedId] = useState(
-    () => options.find((option) => option.planId === currentPlanId)?.planId ?? options[0].planId,
+    () =>
+      (
+        options.find((option) => option.planId === currentPlanId) ??
+        options.find((option) => option.interval === initialInterval) ??
+        options[0]
+      ).planId,
   );
+  // Kept here rather than next to the button so the success message survives the refresh that
+  // swaps the button for "Current plan".
+  const [subscribing, setSubscribing] = useState<BillingOption | null>(null);
   const selected = options.find((option) => option.planId === selectedId) ?? options[0];
+  const currentOption = options.find((option) => option.planId === currentPlanId);
+
+  function action() {
+    if (selected.planId === currentPlanId) return <CurrentPlanStatus />;
+
+    // One active subscription at a time; upgrades are made from the account page.
+    if (currentOption?.interval === "month" && selected.interval === "year") {
+      return (
+        <ButtonLink href="/account?tab=subscription" className="w-full">
+          Upgrade to {selected.label}
+        </ButtonLink>
+      );
+    }
+
+    if (currentOption) {
+      return (
+        <PlanStatus>
+          You&apos;re on <EchoPlus /> {currentOption.label}
+        </PlanStatus>
+      );
+    }
+
+    const label = `Choose ${selected.label}`;
+    if (!signedIn) {
+      const next = `/plans?billing=${billingParam(selected.interval)}`;
+      return (
+        <ButtonLink href={`/login?next=${encodeURIComponent(next)}`} className="w-full">
+          {label}
+        </ButtonLink>
+      );
+    }
+
+    return (
+      <button
+        type="button"
+        aria-haspopup="dialog"
+        onClick={() => setSubscribing(selected)}
+        className={`${buttonClassName("primary")} w-full`}
+      >
+        {label}
+      </button>
+    );
+  }
 
   return (
-    <PlanCard
-      highlighted
-      name={<EchoPlus />}
-      aside={
-        options.length > 1 && (
-          <div
-            role="radiogroup"
-            aria-label="Billing"
-            className="flex rounded-md border border-line bg-background p-0.5 text-xs font-medium"
-          >
-            {options.map((option) => {
-              const checked = option.planId === selected.planId;
-              return (
-                <button
-                  key={option.planId}
-                  type="button"
-                  role="radio"
-                  aria-checked={checked}
-                  onClick={() => setSelectedId(option.planId)}
-                  className={`rounded-[5px] px-3 py-1.5 transition-colors duration-150 ${
-                    checked ? "bg-elevated text-foreground" : "text-muted hover:text-foreground"
-                  }`}
-                >
-                  {option.label}
-                </button>
-              );
-            })}
+    <>
+      <PlanCard
+        highlighted
+        name={<EchoPlus />}
+        aside={
+          options.length > 1 && (
+            <div
+              role="radiogroup"
+              aria-label="Billing"
+              className="flex rounded-md border border-line bg-background p-0.5 text-xs font-medium"
+            >
+              {options.map((option) => {
+                const checked = option.planId === selected.planId;
+                return (
+                  <button
+                    key={option.planId}
+                    type="button"
+                    role="radio"
+                    aria-checked={checked}
+                    onClick={() => setSelectedId(option.planId)}
+                    className={`rounded-[5px] px-3 py-1.5 transition-colors duration-150 ${
+                      checked ? "bg-elevated text-foreground" : "text-muted hover:text-foreground"
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                );
+              })}
+            </div>
+          )
+        }
+        price={
+          <div key={selected.planId} className="motion-safe:animate-fade-in-up">
+            <PlanPrice
+              amount={formatPrice(selected.priceCents)}
+              period={selected.unit}
+              note={
+                selected.savingsCents > 0 && (
+                  <span className="text-sm font-medium text-accent">
+                    Save {formatPrice(selected.savingsCents)}/year
+                  </span>
+                )
+              }
+            />
           </div>
-        )
-      }
-      price={
-        <div key={selected.planId} className="motion-safe:animate-fade-in-up">
-          <PlanPrice
-            amount={formatPrice(selected.priceCents)}
-            period={selected.unit}
-            note={
-              selected.savingsCents > 0 && (
-                <span className="text-sm font-medium text-accent">
-                  Save {formatPrice(selected.savingsCents)}/year
-                </span>
-              )
-            }
-          />
-        </div>
-      }
-      description={selected.description}
-      features={
-        <>
-          <p className="mb-2.5 text-sm text-muted">Everything in {APP_NAME}, plus</p>
-          <ul className="flex flex-col gap-2 text-sm">
-            {PLAN_FEATURES.filter((feature) => !feature.inEcho).map((feature) => (
-              <FeatureItem key={feature.label} included>
-                <span className="font-medium text-foreground">{feature.label}</span>
-              </FeatureItem>
-            ))}
-          </ul>
-        </>
-      }
-      action={
-        selected.planId === currentPlanId ? (
-          <CurrentPlanStatus />
-        ) : (
-          <PlanChoiceButton label={`Choose ${selected.label}`} variant="primary" />
-        )
-      }
-    />
+        }
+        description={selected.description}
+        features={
+          <>
+            <p className="mb-2.5 text-sm text-muted">Everything in {APP_NAME}, plus</p>
+            <ul className="flex flex-col gap-2 text-sm">
+              {PLAN_FEATURES.filter((feature) => !feature.inEcho).map((feature) => (
+                <FeatureItem key={feature.label} included>
+                  <span className="font-medium text-foreground">{feature.label}</span>
+                </FeatureItem>
+              ))}
+            </ul>
+          </>
+        }
+        action={action()}
+      />
+      {subscribing && (
+        <SubscribeDialog
+          key={subscribing.planId}
+          option={subscribing}
+          onClose={() => setSubscribing(null)}
+        />
+      )}
+    </>
   );
 }

@@ -3,20 +3,21 @@
 import { useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import AccountDetailsList from "@/components/account/AccountDetailsList";
 import DeleteAccountForm from "@/components/account/DeleteAccountForm";
+import MySubscription from "@/components/account/MySubscription";
+import SubscriptionHistory from "@/components/account/SubscriptionHistory";
 import ChangePasswordForm from "@/components/auth/ChangePasswordForm";
 import { FieldErrorPlacementContext } from "@/components/forms/FieldErrorPopover";
 import type { AccountDetails } from "@/lib/account/queries";
+import { ACCOUNT_SECTIONS as SECTIONS, type AccountSectionId as SectionId } from "@/lib/account/sections";
 
-const SECTIONS = [
-  { id: "overview", label: "Overview" },
-  { id: "security", label: "Security" },
-  { id: "delete", label: "Delete account" },
-] as const;
-
-type SectionId = (typeof SECTIONS)[number]["id"];
-
-export default function AccountSettings({ details }: { details: AccountDetails }) {
-  const [active, setActive] = useState<SectionId>("overview");
+export default function AccountSettings({
+  details,
+  initialSection = "overview",
+}: {
+  details: AccountDetails;
+  initialSection?: SectionId;
+}) {
+  const [active, setActive] = useState<SectionId>(initialSection);
   const baseId = useId();
   const tabRefs = useRef<Partial<Record<SectionId, HTMLButtonElement | null>>>({});
 
@@ -108,6 +109,17 @@ export default function AccountSettings({ details }: { details: AccountDetails }
 
       <div className="mt-6">
         {panel("overview", <AccountDetailsList details={details} />)}
+        {panel(
+          "subscription",
+          <div className="flex flex-col gap-8">
+            <MySubscription
+              lookup={details.subscription}
+              pastSubscription={details.pastSubscription}
+              billingOptions={details.billingOptions}
+            />
+            <SubscriptionHistory history={details.history} />
+          </div>,
+        )}
         {panel("security", <ChangePasswordForm />, "mx-auto max-w-md")}
         {panel("delete", <DeleteAccountForm />, "mx-auto max-w-sm")}
       </div>

@@ -12,6 +12,7 @@ import {
   hasRecoveryCookie,
   RESET_PASSWORD_PATH,
 } from "./recovery";
+import { safeNextPath } from "./redirect";
 import {
   getPassword,
   getText,
@@ -91,7 +92,7 @@ export async function logIn(_prevState: FormState, formData: FormData): Promise<
   if (error) return errorState(getAuthErrorMessage(error), values);
 
   revalidatePath("/", "layout");
-  redirect("/");
+  redirect(safeNextPath(formData.get("next")) ?? "/");
 }
 
 // US-03 Log Out

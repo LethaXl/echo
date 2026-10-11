@@ -116,7 +116,7 @@ export const validateLogInForm: FormValidator = (formData) =>
 export const validateEmailForm: FormValidator = (formData) =>
   firstFieldError([["email", validateEmail(getText(formData, "email"))]]);
 
-// Browser-side mirrors of the checks in updateName, changePassword and deleteAccount.
+// Browser-side mirrors of the checks in updateName, changePassword, deleteAccount and subscribe.
 export const validateNameForm: FormValidator = (formData) =>
   firstFieldError([["fullName", validateFullName(getText(formData, "fullName"))]]);
 
@@ -134,6 +134,11 @@ export const validateChangePasswordForm: FormValidator = (formData) => {
     ],
   ]);
 };
+
+export const validateSubscribeForm: FormValidator = (formData) =>
+  firstFieldError([
+    ["password", getPassword(formData, "password") ? null : "Enter your password to confirm."],
+  ]);
 
 export const validateDeleteAccountForm: FormValidator = (formData) =>
   firstFieldError([

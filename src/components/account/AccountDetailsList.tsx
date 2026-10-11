@@ -2,33 +2,51 @@ import type { ReactNode } from "react";
 import EditableNameRow from "@/components/account/EditableNameRow";
 import EchoPlus from "@/components/EchoPlus";
 import type { AccountDetails } from "@/lib/account/queries";
-import { APP_NAME } from "@/lib/brand";
 import { formatDate } from "@/lib/format";
+import { BILLING_PERIODS, FREE_PLAN_NAME } from "@/lib/subscriptions/plans";
 
 type DetailRow = { label: string; value: ReactNode };
 
-export default function AccountDetailsList({ details }: { details: AccountDetails }) {
-  const { subscription } = details;
+function membership({ subscription: lookup }: AccountDetails): ReactNode {
+  if (!lookup.ok) return <span className="text-muted">Couldn&apos;t load your plan</span>;
 
+  const { subscription } = lookup;
+  if (!subscription) {
+    return (
+      <>
+        <span className="font-medium">{FREE_PLAN_NAME}</span>
+        <span className="mt-0.5 block text-muted">No active subscription</span>
+      </>
+    );
+  }
+
+  const periodEnd = formatDate(subscription.currentPeriodEnd);
+  const nextPlan = subscription.scheduledPlan;
+  const note = {
+    cancel: `Cancelled; ends on ${periodEnd}`,
+    downgrade: `Moves to ${FREE_PLAN_NAME} on ${periodEnd}`,
+    switch_plan: nextPlan
+      ? `Downgrades to ${BILLING_PERIODS[nextPlan.billingInterval].label} on ${periodEnd}`
+      : `Renews on ${periodEnd}`,
+  };
+
+  return (
+    <>
+      <EchoPlus /> {BILLING_PERIODS[subscription.billingInterval].label}
+      <span className="mt-0.5 block text-muted">
+        {subscription.scheduledChange
+          ? note[subscription.scheduledChange]
+          : `Renews on ${periodEnd}`}
+      </span>
+    </>
+  );
+}
+
+export default function AccountDetailsList({ details }: { details: AccountDetails }) {
   const rows: DetailRow[] = [
     { label: "Email", value: details.email },
     { label: "Member since", value: formatDate(details.createdAt) },
-    {
-      label: "Membership",
-      value: subscription ? (
-        <>
-          <EchoPlus />
-          <span className="mt-0.5 block text-muted">
-            {subscription.planName} · Active until {formatDate(subscription.currentPeriodEnd)}
-          </span>
-        </>
-      ) : (
-        <>
-          <span className="font-medium">{APP_NAME}</span>
-          <span className="mt-0.5 block text-muted">No active subscription</span>
-        </>
-      ),
-    },
+    { label: "Membership", value: membership(details) },
   ];
 
   return (
