@@ -19,6 +19,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   }
 
   const subscribing = next?.startsWith("/plans") ?? false;
+  const watching = next?.startsWith("/watch/") ?? false;
 
   return (
     <AuthPage
@@ -26,7 +27,9 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
       description={
         subscribing
           ? `Log in to subscribe to ${APP_NAME}+.`
-          : "Welcome back. Pick up where you left off."
+          : watching
+            ? "Log in to start watching."
+            : "Welcome back. Pick up where you left off."
       }
       footer={
         <AuthSwitchLink prompt={`New to ${APP_NAME}?`} href="/register" label="Create an account" />

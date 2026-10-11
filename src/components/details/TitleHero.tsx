@@ -1,4 +1,5 @@
-import { FilmIcon, StarIcon } from "@/components/icons";
+import ButtonLink from "@/components/ButtonLink";
+import { FilmIcon, PlayIcon, StarIcon } from "@/components/icons";
 import EchoPlusAccess from "@/components/details/EchoPlusAccess";
 import TmdbImage from "@/components/details/TmdbImage";
 import { MEDIA_TYPES } from "@/components/media/media-types";
@@ -14,9 +15,11 @@ type TitleHeroProps = {
   facts: TitleFact[];
   /** Whether the viewer has an active Echo+ subscription. */
   hasEchoPlus: boolean;
+  /** The simulated viewer; it checks access itself, so everyone gets the button. */
+  watchHref: string;
 };
 
-export default function TitleHero({ title, meta, facts, hasEchoPlus }: TitleHeroProps) {
+export default function TitleHero({ title, meta, facts, hasEchoPlus, watchHref }: TitleHeroProps) {
   const mediaType = MEDIA_TYPES[title.mediaType];
 
   return (
@@ -73,7 +76,12 @@ export default function TitleHero({ title, meta, facts, hasEchoPlus }: TitleHero
           </p>
         )}
 
-        <div className="mt-6">
+        <div className="mt-6 flex flex-wrap items-center gap-3">
+          {/* US-32 Open the Simulated Viewer */}
+          <ButtonLink href={watchHref} size="lg">
+            <PlayIcon className="size-4" />
+            Watch now
+          </ButtonLink>
           <EchoPlusAccess hasEchoPlus={hasEchoPlus} />
         </div>
 

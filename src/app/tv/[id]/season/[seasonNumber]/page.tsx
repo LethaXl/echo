@@ -37,6 +37,7 @@ export async function generateMetadata({ params }: SeasonPageProps): Promise<Met
 export default async function SeasonPage({ params }: SeasonPageProps) {
   const { show, season } = await loadSeason(params);
   const meta = [season.year, formatEpisodeCount(season.episodes.length)].filter(Boolean);
+  const overview = season.overview ?? show.overview;
 
   return (
     <div data-layout="wide" className="pt-2 pb-10 motion-safe:animate-fade-in-up">
@@ -60,8 +61,8 @@ export default async function SeasonPage({ params }: SeasonPageProps) {
             {season.name}
           </h1>
           <p className="mt-3 text-[0.9375rem] text-muted">{meta.join(" · ")}</p>
-          {season.overview && (
-            <p className="mt-5 text-lg leading-[1.6] text-foreground/90">{season.overview}</p>
+          {overview && (
+            <p className="mt-5 text-lg leading-[1.6] text-foreground/90">{overview}</p>
           )}
         </div>
       </header>
@@ -74,7 +75,11 @@ export default async function SeasonPage({ params }: SeasonPageProps) {
         />
       </div>
       <div className="mt-12">
-        <EpisodeList episodes={season.episodes} />
+        <EpisodeList
+          showId={show.tmdbId}
+          seasonNumber={season.seasonNumber}
+          episodes={season.episodes}
+        />
       </div>
     </div>
   );

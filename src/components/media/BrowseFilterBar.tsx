@@ -58,7 +58,7 @@ function ContentTypeToggle({
             role="radio"
             aria-checked={checked}
             onClick={() => onChange(option)}
-            className={`relative z-10 flex w-[5.5rem] items-center justify-center gap-1.5 rounded-full text-[13px] font-semibold transition-colors duration-200 ${
+            className={`relative z-10 flex w-[7rem] items-center justify-center gap-1.5 rounded-full text-[13px] font-semibold transition-colors duration-200 ${
               checked ? "text-on-accent" : "text-muted hover:text-foreground"
             }`}
           >

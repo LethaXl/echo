@@ -216,6 +216,57 @@ export function ArrowLeftIcon(props: IconProps) {
   );
 }
 
+export function PlayIcon(props: IconProps) {
+  return (
+    <Icon fill="currentColor" strokeWidth={0} {...props}>
+      <path d="M7 4.6v14.8a1 1 0 0 0 1.52.85l12.05-7.4a1 1 0 0 0 0-1.7L8.52 3.75A1 1 0 0 0 7 4.6Z" />
+    </Icon>
+  );
+}
+
+export function PauseIcon(props: IconProps) {
+  return (
+    <Icon fill="currentColor" strokeWidth={0} {...props}>
+      <rect x="5.5" y="4" width="4.5" height="16" rx="1" />
+      <rect x="14" y="4" width="4.5" height="16" rx="1" />
+    </Icon>
+  );
+}
+
+export function RestartIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+      <path d="M3 3v5h5" />
+    </Icon>
+  );
+}
+
+export function SkipForwardIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="m5 4 10 8-10 8V4Z" fill="currentColor" />
+      <path d="M19 5v14" />
+    </Icon>
+  );
+}
+
+export function MaximizeIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3" />
+    </Icon>
+  );
+}
+
+export function MinimizeIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M8 3v3a2 2 0 0 1-2 2H3M21 8h-3a2 2 0 0 1-2-2V3M3 16h3a2 2 0 0 1 2 2v3M16 21v-3a2 2 0 0 1 2-2h3" />
+    </Icon>
+  );
+}
+
 export function SpinnerIcon({ className = "size-4", ...props }: IconProps) {
   return (
     <svg

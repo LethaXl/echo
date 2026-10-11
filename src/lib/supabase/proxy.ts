@@ -31,7 +31,19 @@ export async function updateSession(request: NextRequest) {
   });
 
   // Refreshes an expired auth token. Keep this immediately after creating the client.
-  await supabase.auth.getClaims();
+  const { data } = await supabase.auth.getClaims();
+
+  // The viewer pages check sign-in and Echo+ themselves; this just sends visitors to log in
+  // before the page starts streaming.
+  const { pathname } = request.nextUrl;
+  if (!data?.claims && pathname.startsWith("/watch/")) {
+    const loginUrl = request.nextUrl.clone();
+    loginUrl.pathname = "/login";
+    loginUrl.search = `?next=${encodeURIComponent(pathname)}`;
+    const redirect = NextResponse.redirect(loginUrl);
+    response.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie));
+    return redirect;
+  }
 
   return response;
 }

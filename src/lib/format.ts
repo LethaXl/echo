@@ -56,3 +56,7 @@ export function formatPrice(cents: number): string {
 export function formatEpisodeCount(count: number): string {
   return `${formatCount(count)} ${count === 1 ? "episode" : "episodes"}`;
 }
+
+export function formatSeasonLabel(seasonNumber: number): string {
+  return seasonNumber === 0 ? "Specials" : `Season ${seasonNumber}`;
+}

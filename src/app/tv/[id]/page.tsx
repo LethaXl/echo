@@ -5,7 +5,7 @@ import BrowseBackLink from "@/components/details/BrowseBackLink";
 import SeasonGrid from "@/components/details/SeasonGrid";
 import TitleHero, { type TitleFact } from "@/components/details/TitleHero";
 import { formatCalendarDate, formatCount, formatLanguage, formatRuntime } from "@/lib/format";
-import { parseRouteNumber } from "@/lib/media-routes";
+import { parseRouteNumber, watchShowHref } from "@/lib/media-routes";
 import { hasEchoPlus } from "@/lib/subscriptions/queries";
 import { parseYear } from "@/lib/tmdb/catalogue";
 import { getTvShowDetails } from "@/lib/tmdb/details";
@@ -80,6 +80,7 @@ export default async function TvShowPage({ params }: PageProps<"/tv/[id]">) {
           meta={meta}
           facts={showFacts(show)}
           hasEchoPlus={echoPlus}
+          watchHref={watchShowHref(show.tmdbId)}
         />
       </div>
       <div className="mt-18 flex flex-col gap-18">

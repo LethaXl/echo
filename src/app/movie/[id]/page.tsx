@@ -4,7 +4,7 @@ import CastList from "@/components/details/CastList";
 import BrowseBackLink from "@/components/details/BrowseBackLink";
 import TitleHero, { type TitleFact } from "@/components/details/TitleHero";
 import { formatCalendarDate, formatLanguage, formatRuntime } from "@/lib/format";
-import { parseRouteNumber } from "@/lib/media-routes";
+import { parseRouteNumber, watchMovieHref } from "@/lib/media-routes";
 import { hasEchoPlus } from "@/lib/subscriptions/queries";
 import { getMovieDetails } from "@/lib/tmdb/details";
 import type { MovieDetails } from "@/types/media";
@@ -60,6 +60,7 @@ export default async function MoviePage({ params }: PageProps<"/movie/[id]">) {
           meta={meta}
           facts={movieFacts(movie)}
           hasEchoPlus={echoPlus}
+          watchHref={watchMovieHref(movie.tmdbId)}
         />
       </div>
       <div className="mt-18">
