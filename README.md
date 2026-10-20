@@ -1,81 +1,116 @@
 # Echo
 
-Echo is a movie and TV show subscription system developed as a CPS714 Software Project Management group project. Users with an active subscription get **Echo+**, the subscribed experience.
+**Echo** is a movie and TV show discovery and subscription web application developed for **CPS714 Software Project Management** at Toronto Metropolitan University.
 
-Subscriptions and viewing are simulated. There is no real payment processing or video streaming.
+The project is built by a team of three using Agile Scrum, with Jira for sprint planning and task tracking and GitHub for version control.
 
-## Stack
+Users can browse movies and TV shows, explore content details and compare subscription plans. Echo+ is the premium subscription tier, with additional features planned throughout development.
 
-- Next.js (App Router)
-- React
-- TypeScript
-- Tailwind CSS
-- Supabase (authentication and Echo-specific data)
-- TMDB API (movie and TV metadata)
-- Vercel (deployment and hosting)
+**Live website:** https://echo-watch.vercel.app/
 
-## Local setup
+> **Note:** Echo is a course project. Subscriptions and viewing are simulated. No real payments are processed and no video streaming is provided.
 
-1. Install dependencies:
+## Tech Stack
 
-   ```bash
-   npm install
-   ```
-
-2. Create `.env.local` by copying `.env.local.example`, then fill in the values:
-
-   | Variable | Where to find it | Exposed to browser |
-   | --- | --- | --- |
-   | `NEXT_PUBLIC_SUPABASE_URL` | Supabase > Project Settings > API | Yes |
-   | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Supabase > Project Settings > API Keys (publishable key) | Yes |
-   | `TMDB_API_TOKEN` | TMDB > Settings > API (API Read Access Token) | No |
-
-   Never commit `.env.local`. The app still builds without these values; features that need them will not work until they are set.
-
-3. Start the development server:
-
-   ```bash
-   npm run dev
-   ```
-
-   Open [http://localhost:3000](http://localhost:3000).
-
-## Scripts
-
-- `npm run dev` starts the development server
-- `npm run lint` runs ESLint
-- `npm run build` creates a production build
-
-## Project structure
-
-- `src/app/` routes (App Router)
-- `src/components/` shared UI components
-- `src/lib/supabase/` Supabase clients for the browser, server, and proxy
-- `src/lib/tmdb/` server-side TMDB helpers
-- `src/types/` shared TypeScript types
-- `src/proxy.ts` refreshes Supabase auth sessions on each request
-- `supabase/` database migrations and Row Level Security conventions
-
-## Design system
-
-Colour tokens are defined once in `src/app/globals.css` (Tailwind v4 `@theme`). Tailwind's default colour palette is disabled, so use Echo's tokens instead of hex values:
-
-| Token | Use |
+| Technology | Purpose |
 | --- | --- |
-| `background` | Page background |
-| `surface` | Navbar and primary surfaces |
-| `elevated` | Cards and raised elements |
-| `line` | Borders (`border-line`) |
-| `foreground` / `muted` | Primary / secondary text |
-| `accent` / `accent-hover` | Echo green: primary actions, active states |
-| `premium` | Echo+ champagne: premium indicators only |
-| `danger` | Error messages |
+| Next.js (App Router) | Web application framework |
+| React | User interface |
+| TypeScript | Application development |
+| Tailwind CSS | Styling |
+| Supabase | Authentication and database |
+| TMDB API | Movie and TV show information |
+| Vercel | Deployment and hosting |
+| Jira | Sprint planning and project management |
+| GitHub | Version control and collaboration |
 
-Keep the UI dark and restrained: green is an accent, not a section colour; use 4 to 8px radii (`rounded-md`); avoid gradients, glows and heavy shadows. Use `ButtonLink` (or `buttonClassName()` for `<button>`) for actions and `EchoPlus` for the Echo+ wordmark.
+## Features
+
+The following features were completed during Sprint 1:
+
+- User registration, login and logout
+- Password reset and account management
+- Browse movies and TV shows
+- View content details, cast, seasons and episodes
+- Search for movies and shows by title
+- View average TMDB ratings
+- View Echo+ subscription requirements
+- Compare free, monthly and annual subscription plans
+
+Additional functionality, including subscription management and watchlists, is planned for later sprints.
+
+## Project Management
+
+Echo is developed as part of CPS714 using the Scrum framework.
+
+The team works in sprints, with user stories organized and tracked through Jira. Each sprint includes planning, development, testing and a review of completed work.
+
+
+## Getting Started
+
+### 1. Install dependencies
+
+```bash
+npm install
+```
+
+### 2. Configure environment variables
+
+Copy `.env.local.example` to `.env.local` and add the required values.
+
+| Variable | Description |
+| --- | --- |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Supabase publishable key |
+| `TMDB_API_TOKEN` | TMDB API read access token |
+
+The Supabase values can be found in your Supabase project settings. The TMDB token is available through your TMDB account's API settings.
+
+Do not commit `.env.local` to GitHub.
+
+### 3. Run the application
+
+```bash
+npm run dev
+```
+
+Open http://localhost:3000 in your browser.
+
+## Available Scripts
+
+| Command | Description |
+| --- | --- |
+| `npm run dev` | Start the development server |
+| `npm run build` | Create a production build |
+| `npm run lint` | Run ESLint |
+
+## Project Structure
+
+```text
+src/
+├── app/              # Pages and routes
+├── components/       # Shared UI components
+├── lib/
+│   ├── supabase/     # Supabase clients
+│   └── tmdb/         # TMDB API helpers
+├── types/            # Shared TypeScript types
+└── proxy.ts          # Supabase session handling
+
+supabase/             # Database migrations and RLS
+```
+
+## Design
+
+Echo uses a dark interface with green accents and a separate champagne colour for Echo+ features.
+
+The design tokens are defined in `src/app/globals.css` using Tailwind CSS v4. Shared components and colour tokens are used throughout the application to keep the interface consistent.
 
 ## Deployment
 
-Echo will be deployed on Vercel using the standard Next.js setup. Environment variables are configured in the Vercel project settings, not committed to the repository.
+Echo is hosted on Vercel.
+
+**Website:** https://echo-watch.vercel.app/
+
 
 ## Attribution
 
