@@ -29,7 +29,7 @@ const TYPES: { value: ContentType; label: string; Icon: typeof TvIcon }[] = [
 
 const YEARS = releaseYears();
 
-function ContentTypeToggle({
+export function ContentTypeToggle({
   value,
   onChange,
 }: {
@@ -71,7 +71,7 @@ function ContentTypeToggle({
   );
 }
 
-function FilterMenu({
+export function FilterMenu({
   icon,
   label,
   value,
@@ -188,7 +188,7 @@ function MenuList({ children }: { children: ReactNode }) {
   );
 }
 
-function MenuOption({
+export function MenuOption({
   selected,
   onSelect,
   className = "",

@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { FilmIcon, StarIcon } from "@/components/icons";
 import { MEDIA_TYPES } from "@/components/media/media-types";
 import { titleHref } from "@/lib/media-routes";
@@ -18,6 +19,8 @@ type MediaCardProps = {
   showMediaType?: boolean;
   /** Spells out the media type and always shows the TMDB rating, for mixed result grids. */
   detailedMeta?: boolean;
+  /** An independent action beside the title, outside the detail-page link. */
+  titleAction?: ReactNode;
 };
 
 export default function MediaCard({
@@ -26,11 +29,12 @@ export default function MediaCard({
   tag,
   showMediaType = true,
   detailedMeta = false,
+  titleAction,
 }: MediaCardProps) {
   const posterUrl = getTmdbImageUrl(item.posterPath, "w342");
   const mediaType = MEDIA_TYPES[item.mediaType];
 
-  const content = (
+  const poster = (
     <>
       {rank !== undefined && (
         <div className="mb-2 flex h-[1.125rem] items-center gap-2.5">
@@ -72,10 +76,16 @@ export default function MediaCard({
           </div>
         )}
       </div>
-      <h3 className="mt-2.5 truncate text-sm font-medium text-foreground" title={item.title}>
+    </>
+  );
+
+  const heading = (
+      <h3 className={`truncate text-sm font-medium text-foreground ${titleAction ? "leading-7" : "mt-2.5"}`} title={item.title}>
         {item.title}
       </h3>
-      {detailedMeta ? (
+  );
+
+  const metadata = detailedMeta ? (
         <p className="mt-1 flex h-4 items-center gap-1.5 text-xs text-muted">
           {item.year !== null && (
             <>
@@ -107,13 +117,28 @@ export default function MediaCard({
             <span className="sr-only">, TMDB rating {item.tmdbRating.toFixed(1)}</span>
           )}
         </p>
-      )}
-    </>
-  );
+      );
+
+  if (titleAction) {
+    return (
+      <div>
+        <Link href={titleHref(item)} aria-label={`View ${item.title}`} className="group relative block rounded-md">{poster}</Link>
+        <div className="mt-2 flex items-center gap-2">
+          <div className="min-w-0 flex-1">
+            <Link href={titleHref(item)} className="block rounded-sm">{heading}</Link>
+            {metadata}
+          </div>
+          <div className="shrink-0">{titleAction}</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Link href={titleHref(item)} className="group relative block rounded-md">
-      {content}
+      {poster}
+      {heading}
+      {metadata}
     </Link>
   );
 }

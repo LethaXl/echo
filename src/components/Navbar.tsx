@@ -6,16 +6,21 @@ import UserMenu from "@/components/UserMenu";
 import { getProfileName } from "@/lib/account/queries";
 import { getCurrentUser } from "@/lib/auth/session";
 import { APP_NAME } from "@/lib/brand";
+import { getWatchlistAccess } from "@/lib/watchlist/access";
 
 const navLinks = [
   { href: "/", label: "Home" },
   { href: "/browse", label: "Browse" },
+  { href: "/cave", label: "Cave" },
   { href: "/plans", label: "Plans" },
 ];
 
 export default async function Navbar() {
   const user = await getCurrentUser();
-  const profileName = user ? await getProfileName(user.id) : null;
+  const [profileName, caveAccess] = await Promise.all([
+    user ? getProfileName(user.id) : null,
+    user ? getWatchlistAccess() : null,
+  ]);
   const firstName = profileName?.trim().split(/\s+/)[0] || "Account";
 
   return (
@@ -35,7 +40,18 @@ export default async function Navbar() {
           <ul className="flex items-center gap-8 text-base">
             {navLinks.map((link) => (
               <li key={link.href}>
-                <NavLink href={link.href} label={link.label} />
+                {link.href === "/cave" && caveAccess?.status !== "member" ? (
+                  <span
+                    role="link"
+                    aria-disabled="true"
+                    title={user ? "Echo+ is required to use Cave" : "Log in to access Cave"}
+                    className="flex h-9 cursor-not-allowed items-center font-medium text-muted/40"
+                  >
+                    {link.label}
+                  </span>
+                ) : (
+                  <NavLink href={link.href} label={link.label} />
+                )}
               </li>
             ))}
           </ul>

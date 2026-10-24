@@ -1,4 +1,5 @@
 import ButtonLink from "@/components/ButtonLink";
+import TitleWatchlist from "@/components/watchlist/TitleWatchlist";
 import { FilmIcon, PlayIcon, StarIcon } from "@/components/icons";
 import EchoPlusAccess from "@/components/details/EchoPlusAccess";
 import TmdbImage from "@/components/details/TmdbImage";
@@ -82,6 +83,7 @@ export default function TitleHero({ title, meta, facts, hasEchoPlus, watchHref }
             <PlayIcon className="size-4" />
             Watch now
           </ButtonLink>
+          <TitleWatchlist item={title} />
           <EchoPlusAccess hasEchoPlus={hasEchoPlus} />
         </div>
 

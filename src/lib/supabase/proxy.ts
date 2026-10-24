@@ -33,10 +33,11 @@ export async function updateSession(request: NextRequest) {
   // Refreshes an expired auth token. Keep this immediately after creating the client.
   const { data } = await supabase.auth.getClaims();
 
-  // The viewer pages check sign-in and Echo+ themselves; this just sends visitors to log in
-  // before the page starts streaming.
+  // Cave and viewer pages still enforce access themselves. Redirect visitors here
+  // before either route starts streaming, including direct URL visits.
   const { pathname } = request.nextUrl;
-  if (!data?.claims && pathname.startsWith("/watch/")) {
+  const requiresSignIn = pathname === "/cave" || pathname.startsWith("/cave/") || pathname.startsWith("/watch/");
+  if (!data?.claims && requiresSignIn) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/login";
     loginUrl.search = `?next=${encodeURIComponent(pathname)}`;

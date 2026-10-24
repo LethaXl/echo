@@ -93,6 +93,20 @@
   color-scheme: dark;
 }
 
+/* Play only after a confirmed save; hover cannot obscure the confirmation. */
+@media (prefers-reduced-motion: no-preference) {
+  .watchlist-save-confirmation {
+    animation: watchlist-save-settle 420ms ease-out;
+  }
+
+  @keyframes watchlist-save-settle {
+    0% { transform: scale(0.97); }
+    55% { transform: scale(1.025); }
+    100% { transform: scale(1); }
+  }
+
+}
+
 body {
   background: var(--color-background);
   color: var(--color-foreground);

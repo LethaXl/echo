@@ -21,7 +21,7 @@ export function ResultsHeading({ title, summary }: ResultsHeadingProps) {
   );
 }
 
-export default function BrowseResultsSkeleton() {
+export default function BrowseResultsSkeleton({ count = 14 }: { count?: number }) {
   return (
     <section aria-busy="true">
       <div className="mb-5 border-b border-line pb-3">
@@ -30,7 +30,7 @@ export default function BrowseResultsSkeleton() {
       </div>
       <span className="sr-only">Loading titles…</span>
       <ul className={RESULTS_GRID_CLASS_NAME}>
-        {Array.from({ length: 14 }, (_, index) => (
+        {Array.from({ length: count }, (_, index) => (
           <li key={index}>
             <div className={`aspect-[2/3] ${BLOCK}`} />
             <div className={`mt-2.5 h-3.5 w-3/4 ${BLOCK}`} />

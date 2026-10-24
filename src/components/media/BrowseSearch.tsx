@@ -10,7 +10,7 @@ import {
   useTransition,
   type ReactNode,
 } from "react";
-import { SearchIcon, SpinnerIcon, XIcon } from "@/components/icons";
+import MediaSearchField from "@/components/media/MediaSearchField";
 import BrowseFilterBar, { BrowseSortMenu } from "@/components/media/BrowseFilterBar";
 import BrowseResultsSkeleton from "@/components/media/BrowseResultsSkeleton";
 import {
@@ -118,40 +118,14 @@ export default function BrowseSearch({ query, filters, header, children }: Brows
               if (nextQuery && nextQuery !== requestedQuery) search(nextQuery);
             }}
           >
-            <label htmlFor="browse-search" className="sr-only">
-              Search movies and shows
-            </label>
-            <div className="relative">
-              <span className="pointer-events-none absolute top-1/2 left-3.5 flex -translate-y-1/2 text-muted">
-                {isPending ? (
-                  <SpinnerIcon className="size-3.5" />
-                ) : (
-                  <SearchIcon className="size-3.5" />
-                )}
-              </span>
-              <input
-                ref={inputRef}
-                id="browse-search"
-                type="search"
-                value={value}
-                onChange={(event) => handleChange(event.target.value)}
-                placeholder="Search movies and shows"
-                autoComplete="off"
-                spellCheck={false}
-                enterKeyHint="search"
-                className="h-9 w-full rounded-full border border-line bg-surface pr-10 pl-9 text-[13px] text-foreground transition-colors placeholder:text-muted/70 hover:border-muted/40 focus:border-accent/70 focus:outline-none [&::-webkit-search-cancel-button]:appearance-none"
-              />
-              {value && (
-                <button
-                  type="button"
-                  onClick={clear}
-                  aria-label="Clear search"
-                  className="absolute top-1/2 right-1.5 flex size-6 -translate-y-1/2 items-center justify-center rounded-full text-muted transition-colors hover:bg-elevated hover:text-foreground"
-                >
-                  <XIcon className="size-3.5" />
-                </button>
-              )}
-            </div>
+            <MediaSearchField
+              inputRef={inputRef}
+              label="Search movies and shows"
+              value={value}
+              onChange={handleChange}
+              onClear={clear}
+              pending={isPending}
+            />
           </form>
         }
       />
