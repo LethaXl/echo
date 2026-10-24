@@ -11,6 +11,15 @@ Run these in order:
 3. `20261011000000_subscription_management.sql` (US-26 to US-29): upgrade, switch to monthly, downgrade, cancel, subscribe again, automatic renewal and the `subscription_events` history table. The app needs this one: the account page reads the columns it adds.
 4. `20261024000000_watchlist.sql` (US-36 to US-40): ensures the existing `watchlist` table and owner-only policies exist, and adds an index for each user's date-ordered collection in Cave. It preserves existing entries and does not create a second watchlist table.
 5. `20261024010000_watchlist_echo_plus.sql`: requires Echo+ for all watchlist reads, additions and removals, in addition to ownership. Uses the existing `has_active_subscription()` entitlement rules; no subscription tables or functions are changed and no saved titles are deleted.
+6. `20261024020000_viewing_status_echo_plus.sql` (US-41–US-44): requires Echo+ for all viewing-status operations, including reads and clears, and indexes each user's recently updated activity. Reuses the existing table, uniqueness constraint, timestamps and update trigger.
+
+### Apply Viewing Status (Sprint 3 Part 2)
+
+After the migrations above, paste `supabase/migrations/20261024020000_viewing_status_echo_plus.sql` into **Supabase Dashboard > SQL Editor > New query** and select **Run**. It has not been applied automatically. No new environment variables or subscription setup are needed.
+
+The UI's **Watched** label maps to the existing database value `completed`; **Watching** maps to `watching`. Clear status deletes only that user's `viewing_status` row, leaving Watchlist untouched. Opening or finishing the simulated viewer does not write a status. Rows remain stored after Echo+ expiry and become accessible again on resubscription. Existing TV episode/season fields are preserved when updating a title's status.
+
+Manually verify movie and TV status changes on detail pages and Viewing Activity cards; the Viewing Status tab's All/Watching/Watched counts and search; direct Watched marking; clear without changing Watchlist; refresh/relogin persistence; Free/expired-account denial and two-account isolation. Using authenticated clients with the publishable key, also verify RLS denies Free users' reads/writes/clears and rejects another user's IDs. SQL Editor's privileged role bypasses these policies and is not a valid isolation test.
 
 ### Apply the Sprint 3 Watchlist migration
 
@@ -42,7 +51,7 @@ Run `npm run lint`, `npx tsc --noEmit` and `npm run build` for local checks.
 | `subscription_plans` | Echo+ plans (seeded with Monthly and Annual) | Anyone reads active plans; admins manage |
 | `subscriptions` | Simulated Echo+ subscriptions | Owner reads; changes only via functions below |
 | `watchlist` | Saved titles | Echo+ owner reads, adds, removes (after `20261024010000_watchlist_echo_plus.sql`) |
-| `viewing_status` | Simulated viewing progress | Owner reads/deletes; writes require an active Echo+ subscription |
+| `viewing_status` | Watching / Watched titles | Echo+ owner only after `20261024020000_viewing_status_echo_plus.sql` |
 | `ratings` | 1 to 5 rating per title | Owner only; averages via `get_rating_summary` |
 
 Database functions (call with `supabase.rpc(...)`):

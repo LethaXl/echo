@@ -9,9 +9,9 @@ import type { MediaReference } from "@/types/media";
 export default async function TitleWatchlist({ item }: { item: MediaReference }) {
   const access = await getWatchlistAccess();
   if (access.status === "guest") return <ButtonLink variant="secondary" size="lg"
-    href={`/login?next=${encodeURIComponent(titleHref(item))}`}>Log in to save</ButtonLink>;
+    href={`/login?next=${encodeURIComponent(titleHref(item))}`}>Log in to save &amp; track</ButtonLink>;
   if (access.status === "free") return (
-    <ButtonLink href="/plans" variant="secondary" size="lg">Save with <EchoPlus /></ButtonLink>
+    <ButtonLink href="/plans" variant="secondary" size="lg">Save &amp; track with <EchoPlus /></ButtonLink>
   );
   if (access.status === "error") return <p role="alert" className="text-sm text-muted">Echo+ access unavailable. Refresh to try again.</p>;
   const saved = await getWatchlistSaved(item);

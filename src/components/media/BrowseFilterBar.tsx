@@ -78,6 +78,12 @@ export function FilterMenu({
   active,
   align = "left",
   panelClassName = "",
+  size = "md",
+  disabled = false,
+  ariaLabel,
+  tone = "accent",
+  triggerClassName = "",
+  iconOnly = false,
   children,
 }: {
   icon: ReactNode;
@@ -86,6 +92,12 @@ export function FilterMenu({
   active: boolean;
   align?: "left" | "right";
   panelClassName?: string;
+  size?: "md" | "lg";
+  disabled?: boolean;
+  ariaLabel?: string;
+  tone?: "accent" | "neutral";
+  triggerClassName?: string;
+  iconOnly?: boolean;
   /** Picking any button inside the panel closes it. */
   children: ReactNode;
 }) {
@@ -136,34 +148,41 @@ export function FilterMenu({
       <button
         ref={triggerRef}
         type="button"
+        disabled={disabled}
+        aria-label={ariaLabel}
         aria-expanded={open}
         aria-controls={panelId}
+        title={iconOnly ? ariaLabel : undefined}
         onClick={() => setOpen((current) => !current)}
-        className={`group flex h-9 items-center gap-1.5 rounded-full border pr-3 pl-3.5 text-[13px] whitespace-nowrap transition-colors duration-150 ${
-          active
+        className={iconOnly ? "flex size-7 items-center justify-center rounded-sm text-accent transition-colors hover:text-accent-hover disabled:pointer-events-none disabled:opacity-60" : `group flex items-center gap-1.5 border whitespace-nowrap transition-colors duration-150 disabled:pointer-events-none disabled:opacity-60 ${size === "lg" ? `h-11 rounded-md text-sm ${tone === "neutral" ? "px-3" : "px-4"}` : tone === "neutral" ? "h-8 rounded-md px-2.5 text-xs" : "h-9 rounded-full pr-3 pl-3.5 text-[13px]"} ${
+          tone === "neutral"
+            ? `${active ? "border-accent/40" : "border-line"} ${open ? "bg-elevated" : "bg-transparent"} hover:border-muted/60`
+            : active
             ? "border-accent/60 bg-accent/10"
             : open
               ? "border-muted/40 bg-elevated"
               : "border-line bg-surface hover:border-muted/40 hover:bg-elevated"
-        }`}
+        } ${triggerClassName}`}
       >
-        <span className={active ? "text-accent" : "text-muted group-hover:text-foreground"}>
+        {!iconOnly && icon && <span className={active ? "text-accent" : "text-muted group-hover:text-foreground"}>
           {icon}
-        </span>
-        <span className="text-muted">{label}</span>
-        <span className="font-semibold text-foreground">{value}</span>
+        </span>}
+        {!iconOnly && label && <span className="text-muted">{label}</span>}
+        {!iconOnly && <span className="font-semibold text-foreground">{value}</span>}
         <ChevronDownIcon
-          className={`size-3.5 transition-transform duration-200 ${open ? "rotate-180" : ""} ${
+          className={`${iconOnly ? "size-4" : "size-3.5"} transition-transform duration-200 motion-reduce:transition-none ${tone === "neutral" && !iconOnly ? "ml-1" : ""} ${open ? "rotate-180" : ""} ${
             active ? "text-accent" : "text-muted"
           }`}
         />
       </button>
 
-      {open && (
+      {(open || iconOnly) && (
         <div
           ref={panelRef}
           id={panelId}
-          className={`absolute top-full z-30 mt-1.5 rounded-xl border border-accent/35 bg-elevated p-1.5 shadow-2xl shadow-black/60 ring-1 ring-accent/10 motion-safe:animate-menu-in ${
+          inert={!open}
+          aria-hidden={!open}
+          className={`absolute top-full z-30 mt-1.5 rounded-xl border bg-elevated p-1.5 shadow-2xl shadow-black/60 ${iconOnly ? `origin-top-right transition-[opacity,transform] duration-150 ease-out motion-reduce:transition-none ${open ? "translate-y-0 scale-100 opacity-100" : "pointer-events-none -translate-y-1 scale-95 opacity-0"}` : "motion-safe:animate-menu-in"} ${tone === "neutral" ? "border-line" : "border-accent/35 ring-1 ring-accent/10"} ${
             align === "right" ? "right-0" : "left-0"
           } ${panelClassName}`}
           onClick={(event) => {

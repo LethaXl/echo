@@ -24,7 +24,7 @@ export function watchlistKey(item: MediaReference): string {
   return `${item.mediaType}-${item.tmdbId}`;
 }
 
-export function selectWatchlist(items: WatchlistItem[], query: string, sort: WatchlistSort, type: ContentType = "all") {
+export function selectWatchlist<T extends WatchlistItem>(items: T[], query: string, sort: WatchlistSort, type: ContentType = "all") {
   const match = query.trim().toLocaleLowerCase("en");
   return items.filter((item) => (type === "all" || item.mediaType === type) &&
     item.title.toLocaleLowerCase("en").includes(match)).sort((a, b) => {

@@ -40,7 +40,8 @@ export async function updateSession(request: NextRequest) {
   if (!data?.claims && requiresSignIn) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/login";
-    loginUrl.search = `?next=${encodeURIComponent(pathname)}`;
+    const returnTo = pathname === "/cave" || pathname.startsWith("/cave/") ? pathname + request.nextUrl.search : pathname;
+    loginUrl.search = `?next=${encodeURIComponent(returnTo)}`;
     const redirect = NextResponse.redirect(loginUrl);
     response.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie));
     return redirect;
