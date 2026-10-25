@@ -12,6 +12,21 @@ Run these in order:
 4. `20261024000000_watchlist.sql` (US-36 to US-40): ensures the existing `watchlist` table and owner-only policies exist, and adds an index for each user's date-ordered collection in Cave. It preserves existing entries and does not create a second watchlist table.
 5. `20261024010000_watchlist_echo_plus.sql`: requires Echo+ for all watchlist reads, additions and removals, in addition to ownership. Uses the existing `has_active_subscription()` entitlement rules; no subscription tables or functions are changed and no saved titles are deleted.
 6. `20261024020000_viewing_status_echo_plus.sql` (US-41–US-44): requires Echo+ for all viewing-status operations, including reads and clears, and indexes each user's recently updated activity. Reuses the existing table, uniqueness constraint, timestamps and update trigger.
+7. `20261024030000_echo_wave_ratings.sql` (US-45–US-48): requires Echo+ for every ratings operation, alongside existing ownership policies, and indexes the user's recently rated titles. Reuses the initial `ratings` table, 1–5 range constraint, unique key, timestamps and update trigger. Existing ratings are preserved.
+
+### Apply Echo Wave Ratings (Sprint 3 Part 3)
+
+After the earlier migrations, paste the entire contents of `supabase/migrations/20261024030000_echo_wave_ratings.sql` into **Supabase Dashboard > SQL Editor > New query** and select **Run**. This migration has **not** been applied automatically. No new credentials, environment variables or subscription setup are needed.
+
+Personal ratings remain integers from 1 to 5 in `ratings.rating`. TMDB's public rating fields are unchanged. Updating a rating uses the same user/movie-or-TV/TMDB-ID record; clearing deletes only that rating. Echo+ expiry hides personal ratings without deleting them. Recently/oldest rated sorting uses `updated_at`, so changing a rating counts as new rating activity. The existing public aggregate function still exposes only averages/counts, never individual ratings or owners.
+
+Manually verify:
+
+- Rate a movie and a TV show, update the score, clear it, then refresh and log out/in. Movies and shows with the same TMDB ID must retain separate ratings. Watchlist and Viewing Status must remain unchanged.
+- In **Cave > My Ratings**, check personal wave scores, title search, all six sorts, empty/no-match states and editing/clearing from cards. A missing TMDB title must leave its rating clearable.
+- Hover to preview; use Tab and arrow keys (Home/End also work) to move between levels, then Enter or Space to save. Check visible focus and reduced-motion behavior. A failed write must leave the saved score unchanged and display an error.
+- Check Monthly/Annual access, cancellation through the paid period, expiry, resubscription restoring ratings, Free-user upgrade prompts and guest login redirects.
+- With publishable-key clients authenticated as two different users, verify each can only read/change their own ratings. Free users must not read/write/delete personal ratings; invalid IDs, media types and out-of-range ratings must be rejected. Use authenticated clients for RLS checks: SQL Editor's privileged role bypasses these policies.
 
 ### Apply Viewing Status (Sprint 3 Part 2)
 
@@ -52,7 +67,7 @@ Run `npm run lint`, `npx tsc --noEmit` and `npm run build` for local checks.
 | `subscriptions` | Simulated Echo+ subscriptions | Owner reads; changes only via functions below |
 | `watchlist` | Saved titles | Echo+ owner reads, adds, removes (after `20261024010000_watchlist_echo_plus.sql`) |
 | `viewing_status` | Watching / Watched titles | Echo+ owner only after `20261024020000_viewing_status_echo_plus.sql` |
-| `ratings` | 1 to 5 rating per title | Owner only; averages via `get_rating_summary` |
+| `ratings` | Personal 1–5 Echo Wave rating per title | Echo+ owner only after `20261024030000_echo_wave_ratings.sql`; public aggregates via `get_rating_summary` |
 
 Database functions (call with `supabase.rpc(...)`):
 

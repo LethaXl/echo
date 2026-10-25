@@ -12,7 +12,7 @@ export function WatchlistSkeleton() {
 }
 
 /** No auth or network work here: the shell also serves as the prefetched loading UI. */
-export type CaveTab = "watchlist" | "viewing";
+export type CaveTab = "watchlist" | "viewing" | "ratings";
 
 export default function CaveShell({ children, tab = "watchlist" }: { children: ReactNode; tab?: CaveTab }) {
   return (
@@ -26,16 +26,16 @@ export default function CaveShell({ children, tab = "watchlist" }: { children: R
         {([
           { key: "watchlist", label: "Watchlist", href: "/cave" },
           { key: "viewing", label: "Viewing Status", href: "/cave?tab=viewing" },
+          { key: "ratings", label: "My Ratings", href: "/cave?tab=ratings" },
         ] as const).map((section) => (
           <Link key={section.key} href={section.href} scroll={false} aria-current={tab === section.key ? "page" : undefined}
             className={`flex h-11 items-center gap-2 border-b-2 transition-colors ${tab === section.key ? "border-accent font-semibold text-foreground" : "border-transparent font-medium text-muted hover:text-foreground"}`}>
-            {tab === section.key && <span aria-hidden="true" className="size-1.5 rounded-full bg-accent" />}
+            <span aria-hidden="true" className={`size-1.5 rounded-full ${tab === section.key ? "bg-accent" : "bg-muted/50"}`} />
             {section.label}
           </Link>
         ))}
-        <span aria-disabled="true" className="flex h-11 items-center font-medium text-muted">My Ratings</span>
       </nav>
-      <div id={tab === "watchlist" ? "watchlist" : "viewing-status"} className="scroll-mt-6">{children}</div>
+      <div id={tab === "watchlist" ? "watchlist" : tab === "viewing" ? "viewing-status" : "my-ratings"} className="scroll-mt-6">{children}</div>
     </div>
   );
 }

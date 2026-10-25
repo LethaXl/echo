@@ -1,5 +1,6 @@
 import type { CatalogueItem } from "@/types/media";
 import { selectWatchlist, type WatchlistSort } from "@/lib/watchlist/model";
+import type { ContentType } from "@/lib/browse";
 
 // Display labels for the existing database values.
 export const VIEWING_STATUSES = { watching: "Watching", completed: "Completed" } as const;
@@ -17,6 +18,6 @@ export function validViewingStatus(status: unknown): status is ViewingStatus | n
   return status === null || status === "watching" || status === "completed";
 }
 
-export function filterViewingActivity(items: ViewingItem[], query: string, status: ViewingFilter, sort: WatchlistSort = "recent") {
-  return selectWatchlist(items.filter((item) => status === "all" || item.status === status), query, sort);
+export function filterViewingActivity(items: ViewingItem[], query: string, status: ViewingFilter, sort: WatchlistSort = "recent", type: ContentType = "all") {
+  return selectWatchlist(items.filter((item) => status === "all" || item.status === status), query, sort, type);
 }

@@ -10,6 +10,8 @@ import { getWatchlistAccess } from "@/lib/watchlist/access";
 import { getWatchlist } from "@/lib/watchlist/queries";
 import { getViewingActivity } from "@/lib/viewing-status/queries";
 import ViewingActivity from "@/components/viewing-status/ViewingActivity";
+import RatedTitles from "@/components/ratings/RatedTitles";
+import { getRatedTitles } from "@/lib/ratings/queries";
 
 export const metadata: Metadata = { title: "Cave", robots: { index: false, follow: false } };
 
@@ -17,7 +19,7 @@ async function CaveLibrary({ tab }: { tab: CaveTab }) {
   // cookies() in the existing auth utility keeps this content request-specific.
   const access = await getWatchlistAccess();
   if (access.status === "guest") {
-    redirect(`/login?next=${encodeURIComponent(tab === "viewing" ? "/cave?tab=viewing" : "/cave")}`);
+    redirect(`/login?next=${encodeURIComponent(tab === "watchlist" ? "/cave" : `/cave?tab=${tab}`)}`);
   }
 
   if (access.status === "free") {
@@ -38,6 +40,10 @@ async function CaveLibrary({ tab }: { tab: CaveTab }) {
   }
 
   if (access.status === "error") return <CaveDataError tab={tab} />;
+  if (tab === "ratings") {
+    const ratings = await getRatedTitles();
+    return ratings.ok ? <RatedTitles key={access.userId} items={ratings.items} /> : <CaveDataError tab={tab} />;
+  }
   if (tab === "viewing") {
     const activity = await getViewingActivity();
     return activity.ok ? <ViewingActivity key={access.userId} items={activity.items} /> : <CaveDataError tab={tab} />;
@@ -51,7 +57,7 @@ async function CaveLibrary({ tab }: { tab: CaveTab }) {
 function CaveDataError({ tab }: { tab: CaveTab }) {
   return (
     <section className="py-10">
-      <h2 className="text-lg font-semibold tracking-tight">Your {tab === "viewing" ? "viewing activity" : "watchlist"} couldn&apos;t be loaded.</h2>
+      <h2 className="text-lg font-semibold tracking-tight">Your {tab === "ratings" ? "ratings" : tab === "viewing" ? "viewing activity" : "watchlist"} couldn&apos;t be loaded.</h2>
       <p role="alert" className="mt-2 mb-5 text-sm text-muted">Please try again in a moment. Your library hasn&apos;t been changed.</p>
       <WatchlistRetry />
     </section>
@@ -60,7 +66,7 @@ function CaveDataError({ tab }: { tab: CaveTab }) {
 
 export default async function CavePage({ searchParams }: PageProps<"/cave">) {
   const params = await searchParams;
-  const tab: CaveTab = params.tab === "viewing" ? "viewing" : "watchlist";
+  const tab: CaveTab = params.tab === "ratings" ? "ratings" : params.tab === "viewing" ? "viewing" : "watchlist";
   return (
     <CaveShell tab={tab}>
       <Suspense key={tab} fallback={<WatchlistSkeleton />}>

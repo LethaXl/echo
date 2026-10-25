@@ -21,6 +21,8 @@ type MediaCardProps = {
   detailedMeta?: boolean;
   /** An independent action beside the title, outside the detail-page link. */
   titleAction?: ReactNode;
+  /** Hide TMDB's rating only where a personal Echo rating is the focus. */
+  showTmdbRating?: boolean;
 };
 
 export default function MediaCard({
@@ -30,6 +32,7 @@ export default function MediaCard({
   showMediaType = true,
   detailedMeta = false,
   titleAction,
+  showTmdbRating = true,
 }: MediaCardProps) {
   const posterUrl = getTmdbImageUrl(item.posterPath, "w342");
   const mediaType = MEDIA_TYPES[item.mediaType];
@@ -65,7 +68,7 @@ export default function MediaCard({
             {tag}
           </span>
         )}
-        {item.tmdbRating !== null && !detailedMeta && (
+        {showTmdbRating && item.tmdbRating !== null && !detailedMeta && (
           <div
             aria-hidden="true"
             className="absolute inset-x-0 bottom-0 flex translate-y-full items-center justify-end gap-1 bg-background/85 px-2.5 py-1.5 text-[11px] font-medium text-foreground opacity-0 transition duration-200 ease-out group-hover:translate-y-0 group-hover:opacity-100"
@@ -96,7 +99,7 @@ export default function MediaCard({
             </>
           )}
           <span>{mediaType.label}</span>
-          {item.tmdbRating !== null && (
+          {showTmdbRating && item.tmdbRating !== null && (
             <span className="ml-auto flex items-center gap-1 text-foreground/80 tabular-nums">
               <StarIcon className="size-3 text-accent" />
               {item.tmdbRating.toFixed(1)}
@@ -113,7 +116,7 @@ export default function MediaCard({
               <span className="sr-only">{mediaType.label}</span>
             </span>
           )}
-          {item.tmdbRating !== null && (
+          {showTmdbRating && item.tmdbRating !== null && (
             <span className="sr-only">, TMDB rating {item.tmdbRating.toFixed(1)}</span>
           )}
         </p>

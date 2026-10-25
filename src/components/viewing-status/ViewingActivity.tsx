@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import ButtonLink from "@/components/ButtonLink";
-import { ArrowUpDownIcon, CircleCheckIcon, EyeIcon, LayersIcon } from "@/components/icons";
+import { ArrowUpDownIcon, CircleCheckIcon, ClapperboardIcon, EyeIcon, LayersIcon, TvIcon } from "@/components/icons";
 import { FilterMenu, MenuOption } from "@/components/media/BrowseFilterBar";
 import { RESULTS_GRID_CLASS_NAME } from "@/components/media/BrowseResultsSkeleton";
 import MediaCard from "@/components/media/MediaCard";
@@ -10,14 +10,23 @@ import MediaSearchField from "@/components/media/MediaSearchField";
 import ViewingStatusControl from "./ViewingStatusControl";
 import { filterViewingActivity, type ViewingFilter, type ViewingItem } from "@/lib/viewing-status/model";
 import { WATCHLIST_SORTS, type WatchlistSort } from "@/lib/watchlist/model";
+import type { ContentType } from "@/lib/browse";
+
+const CONTENT_TYPES = [
+  { value: "all", label: "All", Icon: LayersIcon },
+  { value: "movie", label: "Movies", Icon: ClapperboardIcon },
+  { value: "tv", label: "TV shows", Icon: TvIcon },
+] as const;
 
 export default function ViewingActivity({ items }: { items: ViewingItem[] }) {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<ViewingFilter>("all");
   const [sort, setSort] = useState<WatchlistSort>("recent");
+  const [type, setType] = useState<ContentType>("all");
   const search = useRef<HTMLInputElement>(null);
-  const shown = filterViewingActivity(items, query, filter, sort);
-  const filtered = Boolean(query.trim()) || filter !== "all";
+  const shown = filterViewingActivity(items, query, filter, sort, type);
+  const filtered = Boolean(query.trim()) || filter !== "all" || type !== "all";
+  const selectedType = CONTENT_TYPES.find((option) => option.value === type) ?? CONTENT_TYPES[0];
   const options = [
     { value: "all", label: "All", Icon: LayersIcon },
     { value: "watching", label: "Watching", Icon: EyeIcon },
@@ -45,6 +54,14 @@ export default function ViewingActivity({ items }: { items: ViewingItem[] }) {
                 </button>
               ))}
             </div>
+            <FilterMenu icon={<selectedType.Icon className="size-3.5" />} label="Type"
+              value={selectedType.label} active={type !== "all"} panelClassName="w-36">
+              {CONTENT_TYPES.map((option) => (
+                <MenuOption key={option.value} selected={type === option.value} onSelect={() => setType(option.value)}>
+                  <span className="flex items-center justify-center gap-2"><option.Icon className="size-3.5" />{option.label}</span>
+                </MenuOption>
+              ))}
+            </FilterMenu>
             <div role="search" aria-label="Viewing activity" className="w-60 max-w-full">
               <MediaSearchField inputRef={search} label="Search viewing activity" placeholder="Search tracked titles"
                 value={query} onChange={setQuery} onClear={clearSearch} />
@@ -78,7 +95,7 @@ export default function ViewingActivity({ items }: { items: ViewingItem[] }) {
         <div className="py-10 text-center">
           <h3 className="text-lg font-semibold tracking-tight">No tracked titles match your filters.</h3>
           <button type="button" className="mt-2 rounded-sm text-sm text-accent hover:underline"
-            onClick={() => { setFilter("all"); clearSearch(); }}>Clear filters</button>
+            onClick={() => { setFilter("all"); setType("all"); clearSearch(); }}>Clear filters</button>
         </div>
       ) : (
         <ul className={RESULTS_GRID_CLASS_NAME}>

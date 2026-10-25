@@ -1,6 +1,7 @@
 import ButtonLink from "@/components/ButtonLink";
 import TitleWatchlist from "@/components/watchlist/TitleWatchlist";
 import TitleViewingStatus from "@/components/viewing-status/TitleViewingStatus";
+import TitleRating from "@/components/ratings/TitleRating";
 import { FilmIcon, PlayIcon, StarIcon } from "@/components/icons";
 import EchoPlusAccess from "@/components/details/EchoPlusAccess";
 import TmdbImage from "@/components/details/TmdbImage";
@@ -86,8 +87,14 @@ export default function TitleHero({ title, meta, facts, hasEchoPlus, watchHref }
           </ButtonLink>
           <TitleWatchlist item={title} />
           <TitleViewingStatus item={title} />
-          <EchoPlusAccess hasEchoPlus={hasEchoPlus} />
+          {hasEchoPlus ? <TitleRating item={title} /> : <EchoPlusAccess hasEchoPlus={false} />}
         </div>
+
+        {!hasEchoPlus && (
+          <div className="mt-6">
+            <TitleRating item={title} />
+          </div>
+        )}
 
         <div className="mt-8">
           {title.tagline && (
