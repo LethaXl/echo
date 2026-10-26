@@ -2,14 +2,12 @@ import ButtonLink from "@/components/ButtonLink";
 import WatchlistButton from "./WatchlistButton";
 import EchoPlus from "@/components/EchoPlus";
 import { getWatchlistAccess } from "@/lib/watchlist/access";
-import { titleHref } from "@/lib/media-routes";
 import { getWatchlistSaved } from "@/lib/watchlist/queries";
 import type { MediaReference } from "@/types/media";
 
 export default async function TitleWatchlist({ item }: { item: MediaReference }) {
   const access = await getWatchlistAccess();
-  if (access.status === "guest") return <ButtonLink variant="secondary" size="lg"
-    href={`/login?next=${encodeURIComponent(titleHref(item))}`}>Log in to save &amp; track</ButtonLink>;
+  if (access.status === "guest") return null;
   if (access.status === "free") return (
     <ButtonLink href="/plans" variant="secondary" size="lg">Save &amp; track with <EchoPlus /></ButtonLink>
   );

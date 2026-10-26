@@ -7,6 +7,7 @@ import EchoPlusAccess from "@/components/details/EchoPlusAccess";
 import TmdbImage from "@/components/details/TmdbImage";
 import { MEDIA_TYPES } from "@/components/media/media-types";
 import { formatCount } from "@/lib/format";
+import { getWatchlistAccess } from "@/lib/watchlist/access";
 import type { MovieDetails, TvShowDetails } from "@/types/media";
 
 export type TitleFact = { label: string; value: string };
@@ -18,12 +19,14 @@ type TitleHeroProps = {
   facts: TitleFact[];
   /** Whether the viewer has an active Echo+ subscription. */
   hasEchoPlus: boolean;
-  /** The simulated viewer; it checks access itself, so everyone gets the button. */
+  /** The simulated viewer; it checks subscription access itself. */
   watchHref: string;
 };
 
-export default function TitleHero({ title, meta, facts, hasEchoPlus, watchHref }: TitleHeroProps) {
+export default async function TitleHero({ title, meta, facts, hasEchoPlus, watchHref }: TitleHeroProps) {
   const mediaType = MEDIA_TYPES[title.mediaType];
+  const access = await getWatchlistAccess();
+  const isGuest = access.status === "guest";
 
   return (
     <div className="grid items-start gap-10 md:grid-cols-[14rem_minmax(0,1fr)] md:gap-12 lg:grid-cols-[15rem_minmax(0,1fr)] lg:gap-13 xl:grid-cols-[17rem_minmax(0,1fr)] xl:gap-14">
@@ -81,16 +84,18 @@ export default function TitleHero({ title, meta, facts, hasEchoPlus, watchHref }
 
         <div className="mt-6 flex flex-wrap items-center gap-3">
           {/* US-32 Open the Simulated Viewer */}
-          <ButtonLink href={watchHref} size="lg">
-            <PlayIcon className="size-4" />
-            Watch now
-          </ButtonLink>
+          {!isGuest && (
+            <ButtonLink href={watchHref} size="lg">
+              <PlayIcon className="size-4" />
+              Watch now
+            </ButtonLink>
+          )}
           <TitleWatchlist item={title} />
           <TitleViewingStatus item={title} />
           {hasEchoPlus ? <TitleRating item={title} /> : <EchoPlusAccess hasEchoPlus={false} />}
         </div>
 
-        {!hasEchoPlus && (
+        {!isGuest && !hasEchoPlus && (
           <div className="mt-6">
             <TitleRating item={title} />
           </div>
