@@ -30,7 +30,7 @@ The following features were completed during Sprint 1:
 
 - User registration, login and logout
 - Password reset and account management
-- Browse movies and TV shows
+- Browse TV shows and movies
 - View content details, cast, seasons and episodes
 - Search for movies and shows by title
 - View average TMDB ratings
