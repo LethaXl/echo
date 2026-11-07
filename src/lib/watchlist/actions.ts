@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getCurrentUser } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { lookUpSubscription } from "@/lib/subscriptions/queries";
@@ -15,8 +16,8 @@ export async function setWatchlistSaved(tmdbId: number, mediaType: MediaType, sa
   if (!isSupabaseConfigured()) return { ok: false, message: "Watchlist is unavailable right now." };
   try {
     const db = await createClient();
-    const { data: { user }, error: authError } = await db.auth.getUser();
-    if (authError || !user) return { ok: false, message: "Log in to manage your watchlist." };
+    const user = await getCurrentUser();
+    if (!user) return { ok: false, message: "Log in to manage your watchlist." };
     const lookup = await lookUpSubscription(user.id);
     if (!lookup.ok) return { ok: false, message: "Your Echo+ access couldn't be checked. Please try again." };
     if (!lookup.subscription) return { ok: false, message: "Echo+ is required to manage your watchlist. View plans to unlock it." };

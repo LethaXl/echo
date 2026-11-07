@@ -5,7 +5,7 @@ import NavLink from "@/components/NavLink";
 import UserMenu from "@/components/UserMenu";
 import { getProfileName } from "@/lib/account/queries";
 import { isCurrentUserAdmin } from "@/lib/admin/access";
-import { getCurrentUser } from "@/lib/auth/session";
+import { getCurrentUser, isCurrentAccountDeactivated } from "@/lib/auth/session";
 import { APP_NAME } from "@/lib/brand";
 import { getWatchlistAccess } from "@/lib/watchlist/access";
 
@@ -18,10 +18,11 @@ const navLinks = [
 
 export default async function Navbar() {
   const user = await getCurrentUser();
-  const [profileName, caveAccess, isAdmin] = await Promise.all([
+  const [profileName, caveAccess, isAdmin, deactivated] = await Promise.all([
     user ? getProfileName(user.id) : null,
     user ? getWatchlistAccess() : null,
     user ? isCurrentUserAdmin() : false,
+    user ? false : isCurrentAccountDeactivated(),
   ]);
   const firstName = profileName?.trim().split(/\s+/)[0] || "Account";
 
@@ -39,26 +40,29 @@ export default async function Navbar() {
               className="h-9 w-auto"
             />
           </Link>
-          <ul className="flex items-center gap-8 text-base">
-            {navLinks.map((link) => (
-              <li key={link.href}>
-                {link.href === "/cave" && caveAccess?.status !== "member" ? (
-                  <span
-                    role="link"
-                    aria-disabled="true"
-                    title={user ? "Echo+ is required to use Cave" : "Log in to access Cave"}
-                    className="flex h-9 cursor-not-allowed items-center font-medium text-muted/40"
-                  >
-                    {link.label}
-                  </span>
-                ) : (
-                  <NavLink href={link.href} label={link.label} />
-                )}
-              </li>
-            ))}
-          </ul>
+          {/* A deactivated account only sees its deactivation screen, which has its own log out. */}
+          {!deactivated && (
+            <ul className="flex items-center gap-8 text-base">
+              {navLinks.map((link) => (
+                <li key={link.href}>
+                  {link.href === "/cave" && caveAccess?.status !== "member" ? (
+                    <span
+                      role="link"
+                      aria-disabled="true"
+                      title={user ? "Echo+ is required to use Cave" : "Log in to access Cave"}
+                      className="flex h-9 cursor-not-allowed items-center font-medium text-muted/40"
+                    >
+                      {link.label}
+                    </span>
+                  ) : (
+                    <NavLink href={link.href} label={link.label} />
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
-        {user ? (
+        {deactivated ? null : user ? (
           <UserMenu firstName={firstName} isAdmin={isAdmin} />
         ) : (
           <div className="flex items-center gap-6">

@@ -16,6 +16,7 @@ Run these in order:
 8. `20261107000000_admin_role_guard.sql` (US-49): refuses role changes made through the API. See [Admins](#admins-us-49).
 9. `20261108000000_plan_management.sql` (US-58 to US-60): plan availability, editable benefits and prices, the Free plan row and subscription price snapshots. The app needs this one. See [Plan management](#plan-management-us-58-to-us-60).
 10. `20261109000000_content_management.sql` (US-50 to US-57): managed titles, seasons and episodes with admin edits and hidden status. See [Content management](#content-management-us-50-to-us-57).
+11. `20261110000000_user_management.sql` (US-61 to US-65): account deactivation and the admin-only account functions. See [User management](#user-management-us-61-to-us-65).
 
 ### Apply Echo Wave Ratings (Sprint 3 Part 3)
 
@@ -156,6 +157,16 @@ TMDB stays the catalogue. Echo only stores the titles an admin has added, edited
 - RLS: only admins (`is_admin()`) can read, add or update these rows. Nobody can delete them through the API, and updates can only change the snapshot, `overrides` and `is_hidden`, never a TMDB ID or season or episode number.
 - `admin_save_title` and `admin_import_tv_content` (admin only) add or update a title, and import a show's seasons and episodes in one transaction. Imports skip anything already imported, so retrying never creates duplicates or overwrites edits.
 - `get_title_rules` and `get_show_rules` are what members and visitors use. They return only which titles, seasons and episodes are hidden, plus the edited fields of visible ones; nothing else in these tables is readable outside admin.
+
+### User management (US-61 to US-65)
+
+Admins manage accounts at `/admin/users`. Apply `20261110000000_user_management.sql` in the SQL Editor after the earlier migrations; it hasn't been applied automatically. It's safe to re-run and only adds `profiles.deactivated_at` (null = active); no existing data changes. Until it's applied, nobody can be deactivated and the page reports that accounts can't be loaded.
+
+- `admin_list_users`, `admin_get_user` and `admin_set_user_active` are the only way in. Each checks `is_admin()` and runs with the admin's own session. Emails are read from `auth.users` inside these functions, so no service role key is used and no other account data is exposed. Search (name or email, case-insensitive), the status filter and pagination (20 per page, newest first) all run in the database.
+- Admin accounts can't be deactivated by anyone, including themselves. `admin_set_user_active` checks the role while holding a lock on the profile, so a concurrent role change can't slip past. `deactivated_at` can't be changed any other way through the API.
+- A deactivated account keeps its sign-in, profile, subscription (and its schedule and recorded price), watchlist, ratings and viewing history. While deactivated, the database refuses every insert, update or delete made with that account's session, including through the subscription and account functions, and hides its rows from direct reads. Scheduled renewals and Dashboard edits aren't affected.
+- In the app, signed-in deactivated accounts only see the Account Deactivated screen (with Log Out), including sessions that were already open. Reactivating restores access straight away; Echo+ then follows the subscription's current state, so an expired subscription means Free.
+- Supabase Auth's own ban isn't used, so a deactivated member can still sign in (and then sees the deactivation screen) or reset their password.
 
 ## Subscriptions
 

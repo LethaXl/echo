@@ -22,6 +22,7 @@ const sections: { title: string; description: string; href?: string }[] = [
   {
     title: "User Management",
     description: "View and manage registered user accounts.",
+    href: "/admin/users",
   },
   {
     title: "Subscription Overview",

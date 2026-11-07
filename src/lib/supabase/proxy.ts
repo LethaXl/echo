@@ -2,6 +2,8 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { getSupabaseConfig } from "./env";
 
+const DEACTIVATED_PATH = "/account-deactivated";
+
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
 
@@ -47,6 +49,21 @@ export async function updateSession(request: NextRequest) {
     const redirect = NextResponse.redirect(loginUrl);
     response.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie));
     return redirect;
+  }
+
+  // US-64: a deactivated account sees only the deactivation screen, which has its own log out.
+  // Pages, server actions and the database check the status again; this keeps the whole site,
+  // including public pages, consistent for a signed-in deactivated account.
+  if (data?.claims && pathname !== DEACTIVATED_PATH) {
+    const { data: active, error } = await supabase.rpc("is_account_active");
+    if (!error && active === false) {
+      const deactivatedUrl = request.nextUrl.clone();
+      deactivatedUrl.pathname = DEACTIVATED_PATH;
+      deactivatedUrl.search = "";
+      const redirect = NextResponse.redirect(deactivatedUrl);
+      response.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie));
+      return redirect;
+    }
   }
 
   return response;

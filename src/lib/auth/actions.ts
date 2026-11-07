@@ -13,6 +13,7 @@ import {
   RESET_PASSWORD_PATH,
 } from "./recovery";
 import { safeNextPath } from "./redirect";
+import { getCurrentUser } from "./session";
 import {
   getPassword,
   getText,
@@ -147,9 +148,7 @@ export async function resetPassword(
   if (!isSupabaseConfigured()) return errorState(NOT_CONFIGURED_MESSAGE);
 
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
 
   if (!user || !(await hasRecoveryCookie())) {
     return errorState("Your reset link has expired. Please request a new one.");
@@ -179,9 +178,7 @@ export async function changePassword(
   if (!isSupabaseConfigured()) return errorState(NOT_CONFIGURED_MESSAGE);
 
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
 
   if (!user?.email) redirect("/login");
 

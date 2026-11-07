@@ -9,6 +9,7 @@ import {
   NOT_CONFIGURED_MESSAGE,
 } from "@/lib/auth/errors";
 import type { FormState } from "@/lib/auth/form-state";
+import { getCurrentUser } from "@/lib/auth/session";
 import { getPassword, getText } from "@/lib/auth/validation";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createClient, createIsolatedClient } from "@/lib/supabase/server";
@@ -88,9 +89,7 @@ function rpcErrorState(
 
 async function getSignedInUser(next: string) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
 
   if (!user?.email) redirect(`/login?next=${encodeURIComponent(next)}`);
   return { supabase, user: { id: user.id, email: user.email } };

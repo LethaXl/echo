@@ -21,8 +21,11 @@ type DialogProps = {
    * keeps it open (e.g. to confirm discarding unsaved changes).
    */
   canClose?: () => boolean;
-  /** `panel` is wider and lays its children out as a column, so they can keep a fixed header and footer around a scrolling body. */
-  size?: "md" | "panel";
+  /**
+   * `panel` and `compact-panel` lay their children out as a column, so they can keep a fixed
+   * header and footer around a scrolling body; `panel` is wider.
+   */
+  size?: "md" | "panel" | "compact-panel";
   onClose: () => void;
   children: ReactNode;
 };
@@ -30,6 +33,7 @@ type DialogProps = {
 const SIZE_CLASS_NAMES = {
   md: "max-w-md overflow-y-auto p-6",
   panel: "max-w-xl flex-col overflow-hidden open:flex",
+  "compact-panel": "max-w-[28rem] flex-col overflow-hidden open:flex",
 };
 
 /**

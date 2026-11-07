@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getCurrentUser } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { lookUpSubscription } from "@/lib/subscriptions/queries";
@@ -16,8 +17,8 @@ export async function setMyRating(tmdbId: number, mediaType: MediaType, rating: 
   if (!isSupabaseConfigured()) return { ok: false, message: "Ratings are unavailable right now." };
   try {
     const db = await createClient();
-    const { data: { user }, error: authError } = await db.auth.getUser();
-    if (authError || !user) return { ok: false, message: "Log in to manage your ratings." };
+    const user = await getCurrentUser();
+    if (!user) return { ok: false, message: "Log in to manage your ratings." };
     // These checks are independent; neither needs to wait for the other before the write.
     const [lookup, metadata] = await Promise.all([
       lookUpSubscription(user.id),

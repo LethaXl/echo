@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { GENERIC_ERROR_MESSAGE, getAuthErrorMessage, NOT_CONFIGURED_MESSAGE } from "@/lib/auth/errors";
 import type { FormState } from "@/lib/auth/form-state";
+import { getCurrentUser } from "@/lib/auth/session";
 import { getPassword, getText, validateFullName } from "@/lib/auth/validation";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createClient } from "@/lib/supabase/server";
@@ -18,9 +19,7 @@ export async function updateName(_prevState: FormState, formData: FormData): Pro
   if (!isSupabaseConfigured()) return { status: "error", message: NOT_CONFIGURED_MESSAGE, values };
 
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
 
   if (!user) redirect("/login");
 
@@ -51,9 +50,7 @@ export async function deleteAccount(_prevState: FormState, formData: FormData): 
   if (!isSupabaseConfigured()) return { status: "error", message: NOT_CONFIGURED_MESSAGE };
 
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
 
   if (!user?.email) redirect("/login");
 
