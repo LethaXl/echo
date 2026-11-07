@@ -2,7 +2,13 @@ import "server-only";
 import { cache } from "react";
 import { getCurrentUser } from "@/lib/auth/session";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
-import type { BillingInterval, ScheduledChange, SubscriptionPlan } from "@/lib/subscriptions/plans";
+import {
+  isPaidPlan,
+  type BillingInterval,
+  type PlanSettings,
+  type ScheduledChange,
+  type SubscriptionPlan,
+} from "@/lib/subscriptions/plans";
 import { createClient } from "@/lib/supabase/server";
 
 export type { BillingInterval, ScheduledChange, SubscriptionPlan };
@@ -11,6 +17,7 @@ export type ActiveSubscription = {
   id: string;
   planId: string;
   planName: string;
+  /** What this subscription is charged each period, fixed when the plan was chosen. */
   priceCents: number;
   billingInterval: BillingInterval;
   startedAt: string;
@@ -24,6 +31,7 @@ export type ActiveSubscription = {
 
 export type ScheduledPlan = {
   id: string;
+  /** The price it renews at, agreed when the switch was scheduled. */
   priceCents: number;
   billingInterval: BillingInterval;
 };
@@ -81,11 +89,19 @@ type PlanRow = {
   description: string | null;
   price_cents: number;
   billing_interval: BillingInterval;
+  features: string[];
+  is_available: boolean;
+  is_free: boolean;
 };
+
+type CatalogueRow = Omit<PlanRow, "billing_interval"> & { billing_interval: BillingInterval | null };
 
 type SubscriptionRow = {
   id: string;
   plan_id: string;
+  /** `null` for subscriptions from before price snapshots, until their next renewal. */
+  price_cents: number | null;
+  scheduled_price_cents: number | null;
   started_at: string;
   current_period_end: string;
   scheduled_change: ScheduledChange | null;
@@ -101,17 +117,21 @@ type PastSubscriptionRow = {
   plan: Pick<PlanRow, "billing_interval"> | null;
 };
 
-/** Active plans in display order, or `null` if they couldn't be loaded. Plans are public under RLS. */
-export const getSubscriptionPlans = cache(async (): Promise<SubscriptionPlan[] | null> => {
+/**
+ * Every listed plan (Free first, then Echo+ in display order) with its current price, benefits and
+ * availability, or `null` if they couldn't be loaded. Plans are public under RLS. This is the one
+ * source of plan details for the Plans page, account pages and Admin Panel.
+ */
+export const getPlanCatalogue = cache(async (): Promise<PlanSettings[] | null> => {
   if (!isSupabaseConfigured()) return null;
 
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("subscription_plans")
-    .select("id, name, description, price_cents, billing_interval")
+    .select("id, name, description, price_cents, billing_interval, features, is_available, is_free")
     .eq("is_active", true)
     .order("sort_order")
-    .overrideTypes<PlanRow[], { merge: false }>();
+    .overrideTypes<CatalogueRow[], { merge: false }>();
 
   if (error) {
     console.error("Failed to load subscription plans:", error.message);
@@ -124,8 +144,21 @@ export const getSubscriptionPlans = cache(async (): Promise<SubscriptionPlan[] |
     description: plan.description,
     priceCents: plan.price_cents,
     billingInterval: plan.billing_interval,
+    features: plan.features,
+    isAvailable: plan.is_available,
+    isFree: plan.is_free,
   }));
 });
+
+/** Echo+ plans in display order, including unavailable ones, or `null` if they couldn't be loaded. */
+export async function getSubscriptionPlans(): Promise<SubscriptionPlan[] | null> {
+  return (await getPlanCatalogue())?.filter(isPaidPlan) ?? null;
+}
+
+/** The Free plan's details, or `null` if they couldn't be loaded. */
+export async function getFreePlan(): Promise<PlanSettings | null> {
+  return (await getPlanCatalogue())?.find((plan) => plan.isFree) ?? null;
+}
 
 async function selectActiveSubscription(userId: string) {
   const supabase = await createClient();
@@ -133,7 +166,7 @@ async function selectActiveSubscription(userId: string) {
     .from("subscriptions")
     .select(
       // Two columns reference subscription_plans, so each embed names the one it follows.
-      "id, plan_id, started_at, current_period_end, scheduled_change, plan:subscription_plans!plan_id(name, price_cents, billing_interval), scheduled_plan:subscription_plans!scheduled_plan_id(id, price_cents, billing_interval)",
+      "id, plan_id, price_cents, scheduled_price_cents, started_at, current_period_end, scheduled_change, plan:subscription_plans!plan_id(name, price_cents, billing_interval), scheduled_plan:subscription_plans!scheduled_plan_id(id, price_cents, billing_interval)",
     )
     .eq("user_id", userId)
     .eq("status", "active")
@@ -173,14 +206,15 @@ export const lookUpSubscription = cache(async (userId: string): Promise<Subscrip
       id: data.id,
       planId: data.plan_id,
       planName: data.plan.name,
-      priceCents: data.plan.price_cents,
+      // Without a snapshot, the next renewal charges the plan's price and fixes it from then on.
+      priceCents: data.price_cents ?? data.plan.price_cents,
       billingInterval: data.plan.billing_interval,
       startedAt: data.started_at,
       currentPeriodEnd: data.current_period_end,
       scheduledChange: data.scheduled_change,
       scheduledPlan: data.scheduled_plan && {
         id: data.scheduled_plan.id,
-        priceCents: data.scheduled_plan.price_cents,
+        priceCents: data.scheduled_price_cents ?? data.scheduled_plan.price_cents,
         billingInterval: data.scheduled_plan.billing_interval,
       },
     },

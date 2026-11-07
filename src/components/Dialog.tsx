@@ -10,12 +10,17 @@ import {
   type ReactNode,
 } from "react";
 
-const CloseContext = createContext<() => void>(() => {});
+const CloseContext = createContext<(force?: boolean) => void>(() => {});
 
 type DialogProps = {
   labelledBy: string;
   /** While true (e.g. a change is being saved), Escape, backdrop clicks and close buttons do nothing. */
   busy: boolean;
+  /**
+   * Asked before Escape, a backdrop click or a close button closes the dialog; returning false
+   * keeps it open (e.g. to confirm discarding unsaved changes).
+   */
+  canClose?: () => boolean;
   onClose: () => void;
   children: ReactNode;
 };
@@ -24,7 +29,7 @@ type DialogProps = {
  * A modal that opens as soon as it mounts. Focus starts on the element marked `data-autofocus`,
  * or else the first input.
  */
-export default function Dialog({ labelledBy, busy, onClose, children }: DialogProps) {
+export default function Dialog({ labelledBy, busy, canClose, onClose, children }: DialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
@@ -36,8 +41,10 @@ export default function Dialog({ labelledBy, busy, onClose, children }: DialogPr
     )?.focus();
   }, []);
 
-  function close() {
-    if (!busy) dialogRef.current?.close();
+  /** `force` skips `canClose`, for closing after the user has already confirmed. */
+  function close(force = false) {
+    if (busy || (!force && canClose && !canClose())) return;
+    dialogRef.current?.close();
   }
 
   return (
@@ -45,8 +52,16 @@ export default function Dialog({ labelledBy, busy, onClose, children }: DialogPr
       ref={dialogRef}
       aria-labelledby={labelledBy}
       onClose={onClose}
+      onKeyDown={(event) => {
+        // Browsers can skip a cancelled `cancel` event on a repeated Escape, so Escape is
+        // handled here when the dialog needs a say in closing.
+        if (canClose && event.key === "Escape") {
+          event.preventDefault();
+          close();
+        }
+      }}
       onCancel={(event) => {
-        if (busy) event.preventDefault();
+        if (busy || (canClose && !canClose())) event.preventDefault();
       }}
       onClick={(event) => {
         if (event.target === event.currentTarget) close();
@@ -58,9 +73,14 @@ export default function Dialog({ labelledBy, busy, onClose, children }: DialogPr
   );
 }
 
+/** Closes the surrounding dialog; pass `true` to skip its `canClose` check. */
+export function useDialogClose() {
+  return use(CloseContext);
+}
+
 export function DialogCloseButton(props: Omit<ComponentProps<"button">, "type" | "onClick">) {
   const close = use(CloseContext);
-  return <button type="button" onClick={close} {...props} />;
+  return <button type="button" onClick={() => close()} {...props} />;
 }
 
 export function DialogLogo() {

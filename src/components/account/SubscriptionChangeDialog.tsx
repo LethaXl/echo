@@ -235,7 +235,12 @@ export default function SubscriptionChangeDialog({
           <DialogSummary>{copy.rows}</DialogSummary>
 
           <form action={formAction} className="mt-5 flex flex-col gap-4">
-            {target && <input type="hidden" name="planId" value={target.planId} />}
+            {target && (
+              <>
+                <input type="hidden" name="planId" value={target.planId} />
+                <input type="hidden" name="expectedPriceCents" value={target.priceCents} />
+              </>
+            )}
             {state.status === "error" && <FormMessage state={state} />}
 
             <div className="mt-1 grid grid-cols-2 gap-3">

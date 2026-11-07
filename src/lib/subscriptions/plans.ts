@@ -19,15 +19,30 @@ export const SIMULATED_PAYMENT_METHOD = "Default Card";
  */
 export type ScheduledChange = "cancel" | "downgrade" | "switch_plan";
 
-export type SubscriptionPlan = {
+/**
+ * A row of subscription_plans: the Free plan or an Echo+ plan. `features` are the benefits shown to
+ * members; they're display text only and never decide what a member can access.
+ */
+export type PlanSettings = {
   id: string;
   name: string;
   description: string | null;
   priceCents: number;
-  billingInterval: BillingInterval;
+  /** `null` only for the Free plan. */
+  billingInterval: BillingInterval | null;
+  features: string[];
+  /** Whether new members can choose it. The Free plan is always available. */
+  isAvailable: boolean;
+  isFree: boolean;
 };
 
-/** One way to pay for Echo+, e.g. monthly. Every option includes the same features. */
+export type SubscriptionPlan = PlanSettings & { billingInterval: BillingInterval; isFree: false };
+
+export function isPaidPlan(plan: PlanSettings): plan is SubscriptionPlan {
+  return !plan.isFree && plan.billingInterval !== null;
+}
+
+/** One way to pay for Echo+, e.g. monthly. */
 export type BillingOption = {
   planId: string;
   interval: BillingInterval;
@@ -35,6 +50,9 @@ export type BillingOption = {
   unit: string;
   priceCents: number;
   description: string;
+  features: string[];
+  /** Whether it can be chosen now; unavailable plans stay listed. */
+  available: boolean;
   /** Savings over a year of the monthly option, in cents. */
   savingsCents: number;
 };
@@ -50,6 +68,8 @@ export function toBillingOptions(plans: SubscriptionPlan[]): BillingOption[] {
       unit: period.unit,
       priceCents: plan.priceCents,
       description: plan.description ?? `Full ${APP_NAME}+ access, billed every ${period.unit}.`,
+      features: plan.features,
+      available: plan.isAvailable,
       savingsCents:
         plan.billingInterval === "year" && monthly
           ? Math.max(0, monthly.priceCents * 12 - plan.priceCents)

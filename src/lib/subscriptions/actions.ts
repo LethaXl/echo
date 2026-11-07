@@ -12,12 +12,14 @@ import type { FormState } from "@/lib/auth/form-state";
 import { getPassword, getText } from "@/lib/auth/validation";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createClient, createIsolatedClient } from "@/lib/supabase/server";
-import { getSubscriptionPlans, lookUpSubscription } from "./queries";
+import { getSubscriptionPlans, lookUpSubscription, type SubscriptionPlan } from "./queries";
 
 const ACCOUNT_SUBSCRIPTION_PATH = "/account?tab=subscription";
 
 const ALREADY_SUBSCRIBED_MESSAGE = "You already have an active Echo+ subscription.";
 const PLAN_UNAVAILABLE_MESSAGE = "That plan isn't available right now. Refresh the page and try again.";
+const PRICE_CHANGED_MESSAGE =
+  "The price of this plan has just changed. Check the new price before you continue.";
 const NO_SUBSCRIPTION_MESSAGE =
   "You don't have an active Echo+ subscription anymore. Refresh the page to see your plan.";
 const CONFIRM_PASSWORD_AGAIN_MESSAGE = "Please confirm your password again.";
@@ -31,9 +33,44 @@ function errorState(message: string, field?: string): FormState {
   return { status: "error", message, field };
 }
 
+/** For a plan that changed while the member was looking at it; refreshes the page behind the dialog. */
+function planChangedState(message: string): FormState {
+  revalidatePath("/", "layout");
+  return errorState(message);
+}
+
+/** The price the member was shown, sent with the form so a change made since then isn't charged. */
+function getExpectedPrice(formData: FormData): number | null {
+  const value = getText(formData, "expectedPriceCents");
+  return /^\d+$/.test(value) ? Number(value) : null;
+}
+
+/**
+ * The Echo+ plan being chosen, if it can be chosen at the price shown. The database checks the
+ * same again when the change is saved.
+ */
+async function findChoosablePlan(
+  planId: string,
+  expectedPriceCents: number | null,
+): Promise<{ ok: true; plan: SubscriptionPlan } | { ok: false; state: FormState }> {
+  const plan = (await getSubscriptionPlans())?.find((option) => option.id === planId);
+  if (!plan || !plan.isAvailable) return { ok: false, state: planChangedState(PLAN_UNAVAILABLE_MESSAGE) };
+  if (expectedPriceCents === null) return { ok: false, state: errorState(GENERIC_ERROR_MESSAGE) };
+  if (plan.priceCents !== expectedPriceCents) {
+    return { ok: false, state: planChangedState(PRICE_CHANGED_MESSAGE) };
+  }
+  return { ok: true, plan };
+}
+
+const PLAN_CHANGED_ERRORS = {
+  P0002: errorState(PLAN_UNAVAILABLE_MESSAGE),
+  ES004: errorState(PLAN_UNAVAILABLE_MESSAGE),
+  ES005: errorState(PRICE_CHANGED_MESSAGE),
+};
+
 /**
  * Turns an error raised by a subscription function into a message, using the codes listed in
- * supabase/migrations/20261011000000_subscription_management.sql.
+ * supabase/migrations/20261011000000_subscription_management.sql and 20261108000000_plan_management.sql.
  */
 function rpcErrorState(
   error: PostgrestError,
@@ -41,7 +78,10 @@ function rpcErrorState(
   messages: Record<string, FormState>,
 ): FormState {
   const known = messages[error.code];
-  if (known) return known;
+  if (known) {
+    if (error.code in PLAN_CHANGED_ERRORS) revalidatePath("/", "layout");
+    return known;
+  }
   console.error(`Failed to ${action}:`, error.code, error.message);
   return errorState(GENERIC_ERROR_MESSAGE);
 }
@@ -103,8 +143,9 @@ export async function subscribe(_prevState: FormState, formData: FormData): Prom
 
   const { user } = await getSignedInUser("/plans");
 
-  const plan = (await getSubscriptionPlans())?.find((option) => option.id === planId);
-  if (!plan) return errorState(PLAN_UNAVAILABLE_MESSAGE);
+  const choosable = await findChoosablePlan(planId, getExpectedPrice(formData));
+  if (!choosable.ok) return choosable.state;
+  const { plan } = choosable;
 
   const existing = await lookUpSubscription(user.id);
   if (!existing.ok) return errorState(GENERIC_ERROR_MESSAGE);
@@ -112,11 +153,14 @@ export async function subscribe(_prevState: FormState, formData: FormData): Prom
 
   return finish(
     await withConfirmedPassword(user, password, async (verified) => {
-      const { data, error } = await verified.rpc("start_subscription", { p_plan_id: plan.id });
+      const { data, error } = await verified.rpc("start_subscription", {
+        p_plan_id: plan.id,
+        p_expected_price_cents: plan.priceCents,
+      });
       if (error) {
         return rpcErrorState(error, "start subscription", {
+          ...PLAN_CHANGED_ERRORS,
           "23505": errorState(ALREADY_SUBSCRIBED_MESSAGE),
-          P0002: errorState(PLAN_UNAVAILABLE_MESSAGE),
           "42501": errorState(CONFIRM_PASSWORD_AGAIN_MESSAGE, "password"),
         });
       }
@@ -145,8 +189,9 @@ export async function upgradeSubscription(
 
   const { user } = await getSignedInUser(ACCOUNT_SUBSCRIPTION_PATH);
 
-  const plan = (await getSubscriptionPlans())?.find((option) => option.id === planId);
-  if (!plan) return errorState(PLAN_UNAVAILABLE_MESSAGE);
+  const choosable = await findChoosablePlan(planId, getExpectedPrice(formData));
+  if (!choosable.ok) return choosable.state;
+  const { plan } = choosable;
 
   const existing = await lookUpSubscription(user.id);
   if (!existing.ok) return errorState(GENERIC_ERROR_MESSAGE);
@@ -160,11 +205,14 @@ export async function upgradeSubscription(
 
   return finish(
     await withConfirmedPassword(user, password, async (verified) => {
-      const { data, error } = await verified.rpc("upgrade_subscription", { p_plan_id: plan.id });
+      const { data, error } = await verified.rpc("upgrade_subscription", {
+        p_plan_id: plan.id,
+        p_expected_price_cents: plan.priceCents,
+      });
       if (error) {
         return rpcErrorState(error, "upgrade subscription", {
+          ...PLAN_CHANGED_ERRORS,
           "23505": errorState(`You're already on ${plan.name}.`),
-          P0002: errorState(PLAN_UNAVAILABLE_MESSAGE),
           ES001: errorState(NO_SUBSCRIPTION_MESSAGE),
           ES003: errorState("Only monthly plans can be upgraded to annual."),
           "42501": errorState(CONFIRM_PASSWORD_AGAIN_MESSAGE, "password"),
@@ -191,12 +239,19 @@ export async function switchSubscriptionPlan(
   if (!isSupabaseConfigured()) return errorState(NOT_CONFIGURED_MESSAGE);
 
   const { supabase } = await getSignedInUser(ACCOUNT_SUBSCRIPTION_PATH);
-  const { data, error } = await supabase.rpc("switch_subscription_plan", { p_plan_id: planId });
+
+  const choosable = await findChoosablePlan(planId, getExpectedPrice(formData));
+  if (!choosable.ok) return choosable.state;
+
+  const { data, error } = await supabase.rpc("switch_subscription_plan", {
+    p_plan_id: choosable.plan.id,
+    p_expected_price_cents: choosable.plan.priceCents,
+  });
 
   if (error) {
     return rpcErrorState(error, "switch plan", {
+      ...PLAN_CHANGED_ERRORS,
       "23505": errorState("You're already on that plan."),
-      P0002: errorState(PLAN_UNAVAILABLE_MESSAGE),
       ES001: errorState(NO_SUBSCRIPTION_MESSAGE),
       ES002: errorState("A change to your plan is already scheduled. Refresh the page to see it."),
       ES003: errorState("Only annual plans can be downgraded to monthly."),

@@ -6,7 +6,6 @@ import EchoPlus from "@/components/EchoPlus";
 import PlanCard, {
   CurrentPlanStatus,
   FeatureItem,
-  PLAN_FEATURES,
   PlanPrice,
   PlanStatus,
 } from "@/components/plans/PlanCard";
@@ -39,6 +38,7 @@ export default function EchoPlusPlanCard({
       (
         options.find((option) => option.planId === currentPlanId) ??
         options.find((option) => option.interval === initialInterval) ??
+        options.find((option) => option.available) ??
         options[0]
       ).planId,
   );
@@ -49,7 +49,17 @@ export default function EchoPlusPlanCard({
   const currentOption = options.find((option) => option.planId === currentPlanId);
 
   function action() {
+    // Members keep their plan even if it's no longer offered.
     if (selected.planId === currentPlanId) return <CurrentPlanStatus />;
+
+    // US-58: unavailable plans stay listed but can't be chosen, by new or current members.
+    if (!selected.available) {
+      return (
+        <button type="button" disabled className={`${buttonClassName("primary")} w-full`}>
+          {selected.label} is unavailable
+        </button>
+      );
+    }
 
     // One active subscription at a time; upgrades are made from the account page.
     if (currentOption?.interval === "month" && selected.interval === "year") {
@@ -128,10 +138,14 @@ export default function EchoPlusPlanCard({
               amount={formatPrice(selected.priceCents)}
               period={selected.unit}
               note={
-                selected.savingsCents > 0 && (
-                  <span className="text-sm font-medium text-accent">
-                    Save {formatPrice(selected.savingsCents)}/year
-                  </span>
+                !selected.available ? (
+                  <span className="text-sm font-medium text-muted">Unavailable</span>
+                ) : (
+                  selected.savingsCents > 0 && (
+                    <span className="text-sm font-medium text-accent">
+                      Save {formatPrice(selected.savingsCents)}/year
+                    </span>
+                  )
                 )
               }
             />
@@ -141,10 +155,10 @@ export default function EchoPlusPlanCard({
         features={
           <>
             <p className="mb-2.5 text-sm text-muted">Everything in {APP_NAME}, plus</p>
-            <ul className="flex flex-col gap-2 text-sm">
-              {PLAN_FEATURES.filter((feature) => !feature.inEcho).map((feature) => (
-                <FeatureItem key={feature.label} included>
-                  <span className="font-medium text-foreground">{feature.label}</span>
+            <ul key={selected.planId} className="flex flex-col gap-2 text-sm">
+              {selected.features.map((feature) => (
+                <FeatureItem key={feature} included>
+                  <span className="font-medium text-foreground">{feature}</span>
                 </FeatureItem>
               ))}
             </ul>

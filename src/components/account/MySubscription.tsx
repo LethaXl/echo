@@ -8,6 +8,7 @@ import UpgradeDialog from "@/components/account/UpgradeDialog";
 import ButtonLink, { buttonClassName } from "@/components/ButtonLink";
 import EchoPlus from "@/components/EchoPlus";
 import { AlertCircleIcon } from "@/components/icons";
+import { FeatureItem } from "@/components/plans/PlanCard";
 import SubscribeDialog from "@/components/plans/SubscribeDialog";
 import { APP_NAME } from "@/lib/brand";
 import { formatDate, formatPrice } from "@/lib/format";
@@ -105,6 +106,8 @@ function EchoPlusSubscription({
   const otherOption = billingOptions.find(
     (option) => option.interval !== subscription.billingInterval,
   );
+  const benefits =
+    billingOptions.find((option) => option.planId === subscription.planId)?.features ?? [];
   const nextPlan = switching ? subscription.scheduledPlan : null;
   const nextPeriod = nextPlan ? BILLING_PERIODS[nextPlan.billingInterval] : null;
   // The simulated charge at the next renewal: the scheduled plan's price after a downgrade.
@@ -125,6 +128,16 @@ function EchoPlusSubscription({
         price={formatPrice(subscription.priceCents)}
         period={`/ ${period.unit}`}
       />
+
+      {benefits.length > 0 && (
+        <ul aria-label="Included" className="flex flex-col gap-2 border-t border-line px-6 py-4 text-sm">
+          {benefits.map((benefit) => (
+            <FeatureItem key={benefit} included>
+              {benefit}
+            </FeatureItem>
+          ))}
+        </ul>
+      )}
 
       {/* US-30 View Renewal Information */}
       <dl className="flex flex-col gap-2.5 border-t border-line px-6 py-4 text-sm">
@@ -162,7 +175,8 @@ function EchoPlusSubscription({
             {switching ? `Stay on ${period.label}` : "Keep Echo+"}
           </button>
         ) : (
-          otherOption && (
+          otherOption &&
+          (otherOption.available ? (
             <button
               type="button"
               aria-haspopup="dialog"
@@ -177,7 +191,15 @@ function EchoPlusSubscription({
             >
               {otherOption.interval === "year" ? "Upgrade" : "Downgrade"} to {otherOption.label}
             </button>
-          )
+          ) : (
+            <button
+              type="button"
+              disabled
+              className={`${buttonClassName("secondary")} w-full sm:flex-1`}
+            >
+              {otherOption.label} is unavailable
+            </button>
+          ))
         )}
         {!ending && (
           <button
@@ -213,8 +235,7 @@ function FreePlan({
       {past && billingOptions.length > 0 ? (
         <div className="border-t border-line px-6 py-5">
           <p className="text-sm leading-relaxed text-muted">
-            <PastSubscriptionSummary past={past} /> Subscribe again to get your watchlist,
-            simulated viewing and ratings back.
+            <PastSubscriptionSummary past={past} /> Subscribe again to get <EchoPlus /> back.
           </p>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             {billingOptions.map((option) => (
@@ -222,6 +243,7 @@ function FreePlan({
                 key={option.planId}
                 type="button"
                 aria-haspopup="dialog"
+                disabled={!option.available}
                 onClick={() => onOpen({ type: "subscribe", option })}
                 className={`${buttonClassName("secondary")} w-full`}
               >
@@ -229,7 +251,9 @@ function FreePlan({
                   <EchoPlus /> {option.label}
                 </span>
                 <span className="text-muted tabular-nums">
-                  {formatPrice(option.priceCents)} / {option.unit}
+                  {option.available
+                    ? `${formatPrice(option.priceCents)} / ${option.unit}`
+                    : "Unavailable"}
                 </span>
               </button>
             ))}
@@ -238,7 +262,7 @@ function FreePlan({
       ) : (
         <div className="flex flex-col items-start gap-4 border-t border-line px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm leading-relaxed text-muted">
-            Upgrade to <EchoPlus /> for a watchlist, simulated viewing and ratings.
+            See everything <EchoPlus /> adds to {APP_NAME}.
           </p>
           <ButtonLink href="/plans" className="shrink-0">
             Explore {APP_NAME}+

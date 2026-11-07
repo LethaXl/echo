@@ -6,25 +6,31 @@ import EchoPlusPlanCard from "@/components/plans/EchoPlusPlanCard";
 import PlanCard, {
   CurrentPlanStatus,
   FeatureItem,
-  PLAN_FEATURES,
   PlanPrice,
   PlanStatus,
 } from "@/components/plans/PlanCard";
 import { getCurrentUser } from "@/lib/auth/session";
 import { APP_NAME } from "@/lib/brand";
-import { FREE_PLAN_NAME, parseBillingParam, toBillingOptions } from "@/lib/subscriptions/plans";
-import { getActiveSubscription, getSubscriptionPlans } from "@/lib/subscriptions/queries";
+import {
+  FREE_PLAN_NAME,
+  isPaidPlan,
+  parseBillingParam,
+  toBillingOptions,
+} from "@/lib/subscriptions/plans";
+import { getActiveSubscription, getPlanCatalogue } from "@/lib/subscriptions/queries";
 
 export const metadata: Metadata = { title: "Plans" };
 
 // US-23 Compare Subscription Plans, US-24 Subscribe to a Plan
 export default async function PlansPage({ searchParams }: PageProps<"/plans">) {
-  const [plans, user, { billing }] = await Promise.all([
-    getSubscriptionPlans(),
+  const [catalogue, user, { billing }] = await Promise.all([
+    getPlanCatalogue(),
     getCurrentUser(),
     searchParams,
   ]);
   const subscription = user ? await getActiveSubscription(user.id) : null;
+  const freePlan = catalogue?.find((plan) => plan.isFree);
+  const plans = catalogue?.filter(isPaidPlan) ?? [];
 
   return (
     <div data-layout="wide" className="motion-safe:animate-fade-in-up">
@@ -33,8 +39,7 @@ export default async function PlansPage({ searchParams }: PageProps<"/plans">) {
         title={`Choose how you use ${APP_NAME}`}
         description={
           <>
-            Browse and discover for free. <EchoPlus /> adds a watchlist, simulated viewing and
-            ratings.
+            Browse and discover for free, or get more with <EchoPlus />.
           </>
         }
       />
@@ -43,15 +48,19 @@ export default async function PlansPage({ searchParams }: PageProps<"/plans">) {
         <PlanCard
           name={<span className="sr-only">{FREE_PLAN_NAME}</span>}
           price={<PlanPrice amount="Free" />}
-          description="Browse, search and explore movies and shows."
+          description={freePlan?.description ?? "Browse, search and explore movies and shows."}
           features={
-            <ul className="flex flex-col gap-2 text-sm">
-              {PLAN_FEATURES.map((feature) => (
-                <FeatureItem key={feature.label} included={feature.inEcho}>
-                  {feature.label}
-                </FeatureItem>
-              ))}
-            </ul>
+            freePlan ? (
+              <ul className="flex flex-col gap-2 text-sm">
+                {freePlan.features.map((feature) => (
+                  <FeatureItem key={feature} included>
+                    {feature}
+                  </FeatureItem>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-muted">Plan details couldn&apos;t be loaded right now.</p>
+            )
           }
           action={
             !user ? (
@@ -68,7 +77,7 @@ export default async function PlansPage({ searchParams }: PageProps<"/plans">) {
           }
         />
 
-        {plans && plans.length > 0 ? (
+        {plans.length > 0 ? (
           <EchoPlusPlanCard
             options={toBillingOptions(plans)}
             currentPlanId={subscription?.planId ?? null}

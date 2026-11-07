@@ -123,6 +123,7 @@ export default function UpgradeDialog({ current, option, onClose }: UpgradeDialo
 
           <form action={formAction} {...formProps} className="mt-5 flex flex-col gap-4">
             <input type="hidden" name="planId" value={option.planId} />
+            <input type="hidden" name="expectedPriceCents" value={option.priceCents} />
             <PasswordField
               label="Account password"
               name="password"

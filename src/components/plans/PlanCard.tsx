@@ -1,15 +1,6 @@
 import type { ReactNode } from "react";
 import { CheckIcon } from "@/components/icons";
 
-export const PLAN_FEATURES = [
-  { label: "Browse movies and shows", inEcho: true },
-  { label: "Search by title", inEcho: true },
-  { label: "Details, cast, seasons and episodes", inEcho: true },
-  { label: "Watchlist", inEcho: false },
-  { label: "Simulated viewing", inEcho: false },
-  { label: "Rate movies and shows", inEcho: false },
-] as const;
-
 type PlanCardProps = {
   name: ReactNode;
   /** Shown opposite the name, e.g. the billing switch. */

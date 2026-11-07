@@ -13,6 +13,8 @@ Run these in order:
 5. `20261024010000_watchlist_echo_plus.sql`: requires Echo+ for all watchlist reads, additions and removals, in addition to ownership. Uses the existing `has_active_subscription()` entitlement rules; no subscription tables or functions are changed and no saved titles are deleted.
 6. `20261024020000_viewing_status_echo_plus.sql` (US-41–US-44): requires Echo+ for all viewing-status operations, including reads and clears, and indexes each user's recently updated activity. Reuses the existing table, uniqueness constraint, timestamps and update trigger.
 7. `20261024030000_echo_wave_ratings.sql` (US-45–US-48): requires Echo+ for every ratings operation, alongside existing ownership policies, and indexes the user's recently rated titles. Reuses the initial `ratings` table, 1–5 range constraint, unique key, timestamps and update trigger. Existing ratings are preserved.
+8. `20261107000000_admin_role_guard.sql` (US-49): refuses role changes made through the API. See [Admins](#admins-us-49).
+9. `20261108000000_plan_management.sql` (US-58 to US-60): plan availability, editable benefits and prices, the Free plan row and subscription price snapshots. The app needs this one. See [Plan management](#plan-management-us-58-to-us-60).
 
 ### Apply Echo Wave Ratings (Sprint 3 Part 3)
 
@@ -63,7 +65,7 @@ Run `npm run lint`, `npx tsc --noEmit` and `npm run build` for local checks.
 | Table | Purpose | Who can access |
 | --- | --- | --- |
 | `profiles` | Name and role for each auth user (created automatically on sign-up) | Owner reads and updates `full_name` only; admins read all |
-| `subscription_plans` | Echo+ plans (seeded with Monthly and Annual) | Anyone reads active plans; admins manage |
+| `subscription_plans` | The Free plan and the Echo+ plans (Monthly and Annual) | Anyone reads active plans; admins update price, benefits and availability (after `20261108000000_plan_management.sql`) |
 | `subscriptions` | Simulated Echo+ subscriptions | Owner reads; changes only via functions below |
 | `watchlist` | Saved titles | Echo+ owner reads, adds, removes (after `20261024010000_watchlist_echo_plus.sql`) |
 | `viewing_status` | Watching / Watched titles | Echo+ owner only after `20261024020000_viewing_status_echo_plus.sql` |
@@ -71,9 +73,11 @@ Run `npm run lint`, `npx tsc --noEmit` and `npm run build` for local checks.
 
 Database functions (call with `supabase.rpc(...)`):
 
-- `start_subscription(p_plan_id)`: simulated subscribe (or subscribe again); dates are set server-side
-- `upgrade_subscription(p_plan_id)`: monthly to annual, effective immediately
-- `switch_subscription_plan(p_plan_id)`: annual to monthly, from the next renewal
+- `start_subscription(p_plan_id, p_expected_price_cents)`: simulated subscribe (or subscribe again); dates are set server-side
+- `upgrade_subscription(p_plan_id, p_expected_price_cents)`: monthly to annual, effective immediately
+- `switch_subscription_plan(p_plan_id, p_expected_price_cents)`: annual to monthly, from the next renewal
+
+These three refuse plans that are unavailable (`ES004`) or whose price differs from `p_expected_price_cents`, the price the member was shown (`ES005`).
 - `cancel_subscription()` / `downgrade_subscription()`: turn off renewal; Echo+ ends when the current period does (the app only offers cancel)
 - `resume_subscription()`: undo a pending switch, cancellation or downgrade
 - `sync_my_subscription()`: apply any renewal or expiry that's due on the current user's subscription
@@ -101,9 +105,41 @@ update public.profiles set role = 'admin' where id = '<User UID>';  -- grant
 update public.profiles set role = 'user'  where id = '<User UID>';  -- remove
 ```
 
+### Plan management (US-58 to US-60)
+
+Admins manage plans at `/admin/plans`. Apply `20261108000000_plan_management.sql` in the SQL Editor after the earlier migrations; it hasn't been applied automatically. It's safe to re-run.
+
+What it changes:
+
+- `subscription_plans` gets `is_available` (whether new members can choose a paid plan) and `is_free`, and a Free row (`echo-free`, named Echo) so all three plans and their benefits live in one table. The Free row must stay at $0, with no billing period, and available; only one can exist. Plan IDs are kept.
+- `features` holds each plan's ordered benefits: 1 to 12, each trimmed, up to 120 characters, with no duplicates. They're display text only and never decide what a member can access. Echo+ benefits that still match the original seed are replaced with the three Echo+ benefits shown on the Plans page; edited ones are left alone.
+- Prices stay in `price_cents` (integer cents, up to $999.99).
+- Admins (`is_admin()`) can update only `price_cents`, `features` and `is_available`. Nobody can create or delete plans through the API, and the checks above apply to every update.
+- `subscriptions` gets `price_cents`, the price the member pays, and `scheduled_price_cents`, the price captured when a switch to monthly is scheduled. Only the subscription functions set them; members can't.
+
+Prices: a new subscription, a resubscription or an upgrade captures the plan's current price, and renewals charge that captured price. A scheduled switch captures the new plan's price when it's scheduled. Changing a plan's price only affects members who subscribe, upgrade or switch afterwards.
+
+Availability: an unavailable plan stays on the Plans page, labelled unavailable, but no one can subscribe, upgrade or switch to it. Its existing subscribers keep it, renew on it at their price and can still cancel. A switch scheduled before the plan was disabled still happens at the next renewal.
+
+Existing subscriptions: the migration copies each active subscription's price from its latest recorded charge on its current plan (`subscription_events`). When there's no such record, `price_cents` stays empty rather than guessed: the app shows the plan's current price, and the next renewal charges it and records it. The app had no way to change plan prices before this migration, so unless a price was edited directly in the database, that's what those members were paying. To see which rows have no recorded price before or after applying:
+
+```sql
+select s.id, s.user_id, p.name, p.price_cents as plan_price
+from public.subscriptions s
+join public.subscription_plans p on p.id = s.plan_id
+where s.status = 'active'
+  and not exists (
+    select 1 from public.subscription_events e
+    where e.subscription_id = s.id
+      and e.plan_id = s.plan_id
+      and e.event_type in ('subscribed', 'resubscribed', 'upgraded', 'renewed')
+      and e.amount_cents is not null
+  );
+```
+
 ## Subscriptions
 
-- Echo Free is the default: a user is on Free whenever they have no active row in `subscriptions`. There is no Free row, so there's one source of truth.
+- Echo Free is the default: a user is on Free whenever they have no active row in `subscriptions`. There is never a Free subscription row, so there's one source of truth. (The Free row in `subscription_plans` only holds the plan's name and benefits for display.)
 - Each row is one continuous Echo+ subscription: `plan_id` gives the current plan (monthly or annual) and price, `status` is `active` or `expired` (`cancelled` only appears on rows cancelled before US-28, which ended immediately), `started_at` is when it began, and `current_period_end` is the next renewal date. `scheduled_change` is `null` when it renews as it is, `cancel` / `downgrade` when it ends at `current_period_end`, or `switch_plan` when it renews on `scheduled_plan_id` instead. Cancelling replaces a pending switch. Ended rows are kept, so subscribing again creates a new row.
 - Echo+ access: an active row whose period hasn't ended, or that renews automatically. Cancelling or downgrading keeps Echo+ until the period ends, then the member is back on Free.
 - `subscriptions_one_active_per_user` allows only one active subscription per user, so duplicates are impossible even with simultaneous requests. Repeated switch, cancel, downgrade or resume requests are refused.
