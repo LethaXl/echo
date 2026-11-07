@@ -4,6 +4,7 @@ import ButtonLink from "@/components/ButtonLink";
 import NavLink from "@/components/NavLink";
 import UserMenu from "@/components/UserMenu";
 import { getProfileName } from "@/lib/account/queries";
+import { isCurrentUserAdmin } from "@/lib/admin/access";
 import { getCurrentUser } from "@/lib/auth/session";
 import { APP_NAME } from "@/lib/brand";
 import { getWatchlistAccess } from "@/lib/watchlist/access";
@@ -17,9 +18,10 @@ const navLinks = [
 
 export default async function Navbar() {
   const user = await getCurrentUser();
-  const [profileName, caveAccess] = await Promise.all([
+  const [profileName, caveAccess, isAdmin] = await Promise.all([
     user ? getProfileName(user.id) : null,
     user ? getWatchlistAccess() : null,
+    user ? isCurrentUserAdmin() : false,
   ]);
   const firstName = profileName?.trim().split(/\s+/)[0] || "Account";
 
@@ -57,7 +59,7 @@ export default async function Navbar() {
           </ul>
         </div>
         {user ? (
-          <UserMenu firstName={firstName} />
+          <UserMenu firstName={firstName} isAdmin={isAdmin} />
         ) : (
           <div className="flex items-center gap-6">
             <Link

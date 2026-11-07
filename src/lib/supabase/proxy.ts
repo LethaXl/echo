@@ -33,14 +33,16 @@ export async function updateSession(request: NextRequest) {
   // Refreshes an expired auth token. Keep this immediately after creating the client.
   const { data } = await supabase.auth.getClaims();
 
-  // Cave and viewer pages still enforce access themselves. Redirect visitors here
-  // before either route starts streaming, including direct URL visits.
+  // Cave, viewer and admin pages still enforce access themselves. Redirect visitors here
+  // before any of them starts streaming, including direct URL visits.
   const { pathname } = request.nextUrl;
-  const requiresSignIn = pathname === "/cave" || pathname.startsWith("/cave/") || pathname.startsWith("/watch/");
+  const keepsQuery =
+    pathname === "/cave" || pathname.startsWith("/cave/") || pathname === "/admin" || pathname.startsWith("/admin/");
+  const requiresSignIn = keepsQuery || pathname.startsWith("/watch/");
   if (!data?.claims && requiresSignIn) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/login";
-    const returnTo = pathname === "/cave" || pathname.startsWith("/cave/") ? pathname + request.nextUrl.search : pathname;
+    const returnTo = keepsQuery ? pathname + request.nextUrl.search : pathname;
     loginUrl.search = `?next=${encodeURIComponent(returnTo)}`;
     const redirect = NextResponse.redirect(loginUrl);
     response.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie));

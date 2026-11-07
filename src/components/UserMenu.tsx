@@ -9,7 +9,8 @@ const itemClassName =
   "group flex h-8 w-full items-center gap-2 rounded-sm pr-3 pl-2.5 text-left text-[13px] whitespace-nowrap transition-colors duration-150";
 const dotClassName = "size-1 shrink-0 rounded-full transition-colors duration-150";
 
-export default function UserMenu({ firstName }: { firstName: string }) {
+/** `isAdmin` comes from the server-rendered navbar, so the Admin Panel item never flashes for others. */
+export default function UserMenu({ firstName, isAdmin }: { firstName: string; isAdmin: boolean }) {
   const [open, setOpen] = useState(false);
   const menuId = useId();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -70,6 +71,19 @@ export default function UserMenu({ firstName }: { firstName: string }) {
         hidden={!open}
         className="absolute top-full left-1/2 z-40 mt-1.5 w-max -translate-x-1/2 rounded-md border border-line bg-elevated p-1 motion-safe:animate-menu-in"
       >
+        {isAdmin && (
+          <>
+            <Link
+              href="/admin"
+              onClick={() => setOpen(false)}
+              className={`${itemClassName} text-foreground/85 hover:bg-line hover:text-foreground`}
+            >
+              <span aria-hidden="true" className={`${dotClassName} bg-muted/60 group-hover:bg-accent`} />
+              Admin Panel
+            </Link>
+            <div aria-hidden="true" className="mx-1 my-1 h-px bg-line" />
+          </>
+        )}
         <Link
           href="/account"
           onClick={() => setOpen(false)}

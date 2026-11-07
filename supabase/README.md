@@ -84,10 +84,21 @@ Database functions (call with `supabase.rpc(...)`):
 
 To pass a name at sign-up, use `supabase.auth.signUp({ email, password, options: { data: { full_name } } })`.
 
-To make someone an admin, run this in the SQL Editor (users cannot change their own role):
+### Admins (US-49)
+
+`profiles.role` is `user` for everyone by default. Setting it to `admin` shows **Admin Panel** in the account menu and opens `/admin`; both are checked on the server through `is_admin()` on every request, so a change applies on the user's next page load. Users can't change roles: only `full_name` is granted for update, and `20261107000000_admin_role_guard.sql` refuses any role change made through the API. Run that migration in the SQL Editor once (safe to re-run).
+
+To grant admin access:
+
+1. **Authentication > Users**: find the user and copy their **User UID**.
+2. **Table Editor > profiles**: find the row whose `id` is that UID (filter on `id` if needed).
+3. Double-click the `role` cell, change `user` to `admin`, and save.
+
+To remove it, set the same `role` cell back to `user`. Or in the SQL Editor:
 
 ```sql
-update public.profiles set role = 'admin' where id = '<user uuid from Authentication > Users>';
+update public.profiles set role = 'admin' where id = '<User UID>';  -- grant
+update public.profiles set role = 'user'  where id = '<User UID>';  -- remove
 ```
 
 ## Subscriptions
