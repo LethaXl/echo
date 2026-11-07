@@ -12,6 +12,7 @@ const sections: { title: string; description: string; href?: string }[] = [
   {
     title: "Content Management",
     description: "Manage movies, television shows, seasons and episodes.",
+    href: "/admin/content",
   },
   {
     title: "Subscription Plans",

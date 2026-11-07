@@ -1,4 +1,5 @@
 import "server-only";
+import { prefetchTitleRules } from "@/lib/content/rules";
 import { createClient } from "@/lib/supabase/server";
 import { getWatchlistAccess } from "@/lib/watchlist/access";
 import { getWatchlistMetadata } from "@/lib/watchlist/metadata";
@@ -39,6 +40,7 @@ export async function getRatedTitles(): Promise<{ ok: boolean; items: RatedItem[
       rows.push(...(data ?? []));
       if (!data || data.length < 500) break;
     }
+    prefetchTitleRules(rows.map((row) => ({ tmdbId: row.tmdb_id, mediaType: row.media_type })));
     const items = new Array<RatedItem>(rows.length);
     let nextIndex = 0;
     async function loadMetadata() {

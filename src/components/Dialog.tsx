@@ -21,15 +21,22 @@ type DialogProps = {
    * keeps it open (e.g. to confirm discarding unsaved changes).
    */
   canClose?: () => boolean;
+  /** `panel` is wider and lays its children out as a column, so they can keep a fixed header and footer around a scrolling body. */
+  size?: "md" | "panel";
   onClose: () => void;
   children: ReactNode;
+};
+
+const SIZE_CLASS_NAMES = {
+  md: "max-w-md overflow-y-auto p-6",
+  panel: "max-w-xl flex-col overflow-hidden open:flex",
 };
 
 /**
  * A modal that opens as soon as it mounts. Focus starts on the element marked `data-autofocus`,
  * or else the first input.
  */
-export default function Dialog({ labelledBy, busy, canClose, onClose, children }: DialogProps) {
+export default function Dialog({ labelledBy, busy, canClose, size = "md", onClose, children }: DialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
@@ -66,7 +73,7 @@ export default function Dialog({ labelledBy, busy, canClose, onClose, children }
       onClick={(event) => {
         if (event.target === event.currentTarget) close();
       }}
-      className="m-auto max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-md overflow-y-auto rounded-xl border border-line bg-surface p-6 text-foreground shadow-2xl shadow-black/60 backdrop:bg-black/70 motion-safe:animate-fade-in-up"
+      className={`m-auto max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] rounded-xl border border-line bg-surface text-foreground shadow-2xl shadow-black/60 backdrop:bg-black/70 motion-safe:animate-fade-in-up ${SIZE_CLASS_NAMES[size]}`}
     >
       <CloseContext value={close}>{children}</CloseContext>
     </dialog>

@@ -23,7 +23,7 @@ export async function setViewingStatus(tmdbId: number, mediaType: MediaType, sta
     if (!lookup.subscription) return { ok: false, message: "Echo+ is required to manage viewing status." };
     // Clearing remains possible for a title that TMDB no longer carries.
     if (status !== null && !(await getWatchlistMetadata({ tmdbId, mediaType }))) {
-      return { ok: false, message: "This title is no longer available on TMDB. You can still clear its status." };
+      return { ok: false, message: "This title isn't available on Echo. You can still clear its status." };
     }
     const { error } = status === null
       ? await db.from("viewing_status").delete().eq("user_id", user.id)

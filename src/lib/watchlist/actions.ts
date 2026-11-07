@@ -21,7 +21,7 @@ export async function setWatchlistSaved(tmdbId: number, mediaType: MediaType, sa
     if (!lookup.ok) return { ok: false, message: "Your Echo+ access couldn't be checked. Please try again." };
     if (!lookup.subscription) return { ok: false, message: "Echo+ is required to manage your watchlist. View plans to unlock it." };
     if (saved && !(await getWatchlistMetadata({ tmdbId, mediaType }))) {
-      return { ok: false, message: "This title is no longer available on TMDB." };
+      return { ok: false, message: "This title isn't available on Echo." };
     }
     const { error } = saved
       ? await db.from("watchlist").upsert({ user_id: user.id, tmdb_id: tmdbId, media_type: mediaType },

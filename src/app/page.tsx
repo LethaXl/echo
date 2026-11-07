@@ -64,8 +64,10 @@ export default async function Home({ searchParams }: PageProps<"/">) {
     searchParams,
     getTitles(WALL_COLUMNS.flatMap((column) => column.titles)),
   ]);
+  const wallTitleCount = WALL_COLUMNS.reduce((total, column) => total + column.titles.length, 0);
+  // Hidden titles are left out of `titles`, and the columns need every poster to line up.
   const wall =
-    titles && titles.every((item) => item.posterPath)
+    titles && titles.length === wallTitleCount && titles.every((item) => item.posterPath)
       ? WALL_COLUMNS.map(({ offset, titles: column }, index) => ({
           offset,
           items: titles.slice(index * column.length, (index + 1) * column.length),

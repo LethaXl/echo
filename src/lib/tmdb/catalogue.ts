@@ -5,6 +5,7 @@ import {
   DEFAULT_FILTERS,
   genreIdFor,
 } from "@/lib/browse";
+import { applyTitleRules } from "@/lib/content/rules";
 import { isTmdbConfigured, tmdbFetch } from "@/lib/tmdb/client";
 import type {
   TmdbMovieResult,
@@ -62,7 +63,7 @@ function interleave<T>(first: T[], second: T[]): T[] {
 }
 
 /** Returns `null` instead of throwing so one failed section never breaks the page. */
-async function loadSection(
+async function loadTmdbSection(
   label: string,
   load: () => Promise<CatalogueItem[]>,
 ): Promise<CatalogueItem[] | null> {
@@ -71,6 +72,24 @@ async function loadSection(
     return await load();
   } catch (error) {
     console.error(`Failed to load ${label}:`, error instanceof Error ? error.message : error);
+    return null;
+  }
+}
+
+/**
+ * A public list: titles admins hid are left out and admin edits applied (US-52, US-53). If that
+ * can't be checked, the section is unavailable rather than possibly showing a hidden title.
+ */
+async function loadSection(
+  label: string,
+  load: () => Promise<CatalogueItem[]>,
+): Promise<CatalogueItem[] | null> {
+  const items = await loadTmdbSection(label, load);
+  if (!items) return null;
+  try {
+    return await applyTitleRules(items);
+  } catch (error) {
+    console.error(`Failed to check ${label}:`, error instanceof Error ? error.message : error);
     return null;
   }
 }
@@ -295,6 +314,19 @@ export function searchTitles(query: string, filters: BrowseFilters = DEFAULT_FIL
   });
 }
 
+/**
+ * Content Management search: TMDB's first page of movie and TV matches in one request, as TMDB
+ * has them, including titles admins hid.
+ */
+export function searchTmdbTitles(query: string) {
+  return loadTmdbSection("admin search results", async () => {
+    const candidates = await searchAll(query, 1, comparableTitle(query));
+    return uniqueCandidates(candidates)
+      .sort((a, b) => b.score - a.score)
+      .map(({ item }) => item);
+  });
+}
+
 /** A–Z gets a page more so it reaches past the titles starting with digits. */
 const DISCOVER_PAGES: Record<BrowseSort, number> = { popular: 2, newest: 2, title: 3 };
 
@@ -495,7 +527,11 @@ export async function getEchoTrail(start: CatalogueItem): Promise<CatalogueItem[
   } catch (error) {
     console.error("Failed to build Echo Trail:", error instanceof Error ? error.message : error);
   }
-  return trail;
+  try {
+    return await applyTitleRules(trail);
+  } catch {
+    return [];
+  }
 }
 
 /** Specific titles by TMDB ID, in the order given. */

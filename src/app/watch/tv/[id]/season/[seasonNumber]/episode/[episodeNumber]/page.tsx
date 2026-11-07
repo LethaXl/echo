@@ -75,7 +75,7 @@ export default async function WatchEpisodePage({ params, searchParams }: WatchEp
           <p className="mt-2 text-sm text-foreground/80 sm:text-base">
             {viewer.status === "unaired"
               ? `${show.title} season ${seasonNumber}, episode ${episodeNumber} airs on ${formatCalendarDate(viewer.airDate)}.`
-              : `TMDB doesn't list season ${seasonNumber}, episode ${episodeNumber} of ${show.title}.`}
+              : `Season ${seasonNumber}, episode ${episodeNumber} of ${show.title} isn't available on Echo.`}
           </p>
           <ButtonLink href={viewer.detailsHref} variant="secondary" className="mt-6 bg-background/40">
             Browse episodes

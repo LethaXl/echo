@@ -1,5 +1,6 @@
 import "server-only";
 import { cache } from "react";
+import { prefetchTitleRules } from "@/lib/content/rules";
 import { createClient } from "@/lib/supabase/server";
 import { getWatchlistAccess } from "@/lib/watchlist/access";
 import { getWatchlistMetadata } from "@/lib/watchlist/metadata";
@@ -68,6 +69,7 @@ export async function getViewingActivity(): Promise<{ ok: boolean; items: Viewin
     }
   }
   const resultRows = result.rows;
+  prefetchTitleRules(resultRows.map((row) => ({ tmdbId: row.tmdb_id, mediaType: row.media_type })));
   await Promise.all(Array.from({ length: Math.min(8, resultRows.length) }, () => loadMetadata()));
   return { ok: true, items };
 }

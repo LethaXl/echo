@@ -26,7 +26,7 @@ export async function setMyRating(tmdbId: number, mediaType: MediaType, rating: 
     if (!lookup.ok) return { ok: false, message: "Your Echo+ access couldn't be checked. Please try again." };
     if (!lookup.subscription) return { ok: false, message: "Echo+ is required to manage ratings." };
     if (rating !== null && !metadata) {
-      return { ok: false, message: "This title is no longer available on TMDB. You can still clear its rating." };
+      return { ok: false, message: "This title isn't available on Echo. You can still clear its rating." };
     }
     const { error } = rating === null
       ? await db.from("ratings").delete().eq("user_id", user.id)

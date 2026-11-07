@@ -15,6 +15,7 @@ Run these in order:
 7. `20261024030000_echo_wave_ratings.sql` (US-45–US-48): requires Echo+ for every ratings operation, alongside existing ownership policies, and indexes the user's recently rated titles. Reuses the initial `ratings` table, 1–5 range constraint, unique key, timestamps and update trigger. Existing ratings are preserved.
 8. `20261107000000_admin_role_guard.sql` (US-49): refuses role changes made through the API. See [Admins](#admins-us-49).
 9. `20261108000000_plan_management.sql` (US-58 to US-60): plan availability, editable benefits and prices, the Free plan row and subscription price snapshots. The app needs this one. See [Plan management](#plan-management-us-58-to-us-60).
+10. `20261109000000_content_management.sql` (US-50 to US-57): managed titles, seasons and episodes with admin edits and hidden status. See [Content management](#content-management-us-50-to-us-57).
 
 ### Apply Echo Wave Ratings (Sprint 3 Part 3)
 
@@ -136,6 +137,25 @@ where s.status = 'active'
       and e.amount_cents is not null
   );
 ```
+
+### Content management (US-50 to US-57)
+
+Admins manage content at `/admin/content`. Apply `20261109000000_content_management.sql` in the SQL Editor after the earlier migrations; it hasn't been applied automatically. It's safe to re-run, and it doesn't change any existing table. Until it's applied, Echo shows TMDB's catalogue unchanged (nothing can be hidden yet) and the admin content pages report that content can't be loaded. Once it's applied, if Echo can't check which content is hidden, it shows an unavailable or error state rather than risk showing hidden content.
+
+TMDB stays the catalogue. Echo only stores the titles an admin has added, edited or hidden:
+
+| Table | Holds |
+| --- | --- |
+| `managed_titles` | One row per movie or show (`media_type`, `tmdb_id`, unique together), a TMDB snapshot for admin lists (title, year, poster), `overrides` and `is_hidden` |
+| `managed_seasons` | Imported seasons of a managed show (unique per show and `season_number`) and `is_hidden` |
+| `managed_episodes` | Imported episodes of a season (unique per season and `episode_number`), a TMDB snapshot (name, air date), `overrides` and `is_hidden` |
+
+- `overrides` holds only the fields an admin changed. A key that's present replaces TMDB's value, including an empty string for a field cleared on purpose; a missing key means TMDB's value is used, so TMDB updates keep flowing into unedited fields. Allowed keys, lengths, dates and image paths are checked by the database on every write.
+- Every TMDB title is on Echo unless it's hidden; a record is created automatically the first time an admin edits or hides a title, season or episode, so nothing has to be imported first. **Add Content** also accepts a TMDB movie, show, season or episode link and creates its records (plus any missing parent show or season) without touching existing ones. Echo only reads the IDs from the link; it never fetches the link itself.
+- Hiding never deletes anything. A hidden show hides its seasons and episodes, and a hidden season hides its episodes; restoring a show or season leaves items hidden on their own hidden. Members' watchlists, ratings and viewing status are kept.
+- RLS: only admins (`is_admin()`) can read, add or update these rows. Nobody can delete them through the API, and updates can only change the snapshot, `overrides` and `is_hidden`, never a TMDB ID or season or episode number.
+- `admin_save_title` and `admin_import_tv_content` (admin only) add or update a title, and import a show's seasons and episodes in one transaction. Imports skip anything already imported, so retrying never creates duplicates or overwrites edits.
+- `get_title_rules` and `get_show_rules` are what members and visitors use. They return only which titles, seasons and episodes are hidden, plus the edited fields of visible ones; nothing else in these tables is readable outside admin.
 
 ## Subscriptions
 

@@ -1,4 +1,5 @@
 import "server-only";
+import { prefetchTitleRules } from "@/lib/content/rules";
 import { getWatchlistAccess } from "./access";
 import { createClient } from "@/lib/supabase/server";
 import { getWatchlistMetadata } from "./metadata";
@@ -31,6 +32,7 @@ export async function getWatchlist(): Promise<{ items: WatchlistItem[]; error: b
       rows.push(...(data ?? []));
       if (!data || data.length < 500) break;
     }
+    prefetchTitleRules(rows.map((row) => ({ tmdbId: row.tmdb_id, mediaType: row.media_type })));
     const items = new Array<WatchlistItem>(rows.length);
     let nextIndex = 0;
     // Keep eight requests in flight without waiting for the slowest title in each batch.

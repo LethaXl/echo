@@ -1,5 +1,13 @@
 import "server-only";
 import { cache } from "react";
+import {
+  applyEpisodeOverrides,
+  applyMovieOverrides,
+  applyTvOverrides,
+  getEpisodeRule,
+  getShowRules,
+  getTitleRule,
+} from "@/lib/content/rules";
 import { normalizeMovie, normalizeTvShow, parseYear } from "@/lib/tmdb/catalogue";
 import { TmdbError, tmdbFetch } from "@/lib/tmdb/client";
 import type {
@@ -57,8 +65,8 @@ function movieCertification(movie: TmdbMovieDetails): string | null {
   return release?.certification ?? null;
 }
 
-// US-10 View Content Details (movies)
-export const getMovieDetails = cache(async (id: number): Promise<MovieDetails | null> => {
+// US-10 View Content Details (movies), as TMDB has it
+export const getTmdbMovieDetails = cache(async (id: number): Promise<MovieDetails | null> => {
   const movie = await fetchOrNull<TmdbMovieDetails>(`/movie/${id}`, {
     language: LANGUAGE,
     append_to_response: "credits,release_dates",
@@ -104,8 +112,8 @@ function normalizeSeasons(seasons: TmdbSeasonSummary[]): SeasonSummary[] {
   ];
 }
 
-// US-10 View Content Details (TV shows)
-export const getTvShowDetails = cache(async (id: number): Promise<TvShowDetails | null> => {
+// US-10 View Content Details (TV shows), as TMDB has it
+export const getTmdbTvShowDetails = cache(async (id: number): Promise<TvShowDetails | null> => {
   const show = await fetchOrNull<TmdbTvDetails>(`/tv/${id}`, {
     language: LANGUAGE,
     append_to_response: "credits,content_ratings",
@@ -137,8 +145,8 @@ export const getTvShowDetails = cache(async (id: number): Promise<TvShowDetails 
   };
 });
 
-// US-12 View Season Episodes
-export const getSeasonDetails = cache(
+// US-12 View Season Episodes, as TMDB has it
+export const getTmdbSeasonDetails = cache(
   async (showId: number, seasonNumber: number): Promise<SeasonDetails | null> => {
     const season = await fetchOrNull<TmdbSeasonDetails>(
       `/tv/${showId}/season/${seasonNumber}`,
@@ -161,6 +169,76 @@ export const getSeasonDetails = cache(
         runtime: episode.runtime || null,
         stillPath: episode.still_path,
       })),
+    };
+  },
+);
+
+// The versions Echo's public pages show: `null` (a 404) for anything an admin hid, with admin
+// edits applied over TMDB's data (US-52 to US-57).
+
+export const getMovieDetails = cache(async (id: number): Promise<MovieDetails | null> => {
+  const [movie, rule] = await Promise.all([
+    getTmdbMovieDetails(id),
+    getTitleRule({ mediaType: "movie", tmdbId: id }),
+  ]);
+  if (!movie || rule?.hidden) return null;
+  return rule ? applyMovieOverrides(movie, rule.overrides) : movie;
+});
+
+export const getTvShowDetails = cache(async (id: number): Promise<TvShowDetails | null> => {
+  const [show, rule, showRules] = await Promise.all([
+    getTmdbTvShowDetails(id),
+    getTitleRule({ mediaType: "tv", tmdbId: id }),
+    getShowRules(id),
+  ]);
+  if (!show || rule?.hidden) return null;
+
+  const hiddenEpisodes = (seasonNumber: number) =>
+    [...showRules.episodes].filter(
+      ([key, episode]) => episode.hidden && key.startsWith(`${seasonNumber}-`),
+    ).length;
+
+  // Counts leave out hidden seasons and episodes; TMDB's show totals skip specials (season 0).
+  const seasons: TvShowDetails["seasons"] = [];
+  let hiddenSeasonCount = 0;
+  let hiddenEpisodeCount = 0;
+  for (const season of show.seasons) {
+    const hidden = showRules.hiddenSeasons.has(season.seasonNumber);
+    const episodeCount = hidden
+      ? 0
+      : Math.max(0, season.episodeCount - hiddenEpisodes(season.seasonNumber));
+    if (season.seasonNumber > 0) {
+      hiddenEpisodeCount += season.episodeCount - episodeCount;
+      if (hidden) hiddenSeasonCount += 1;
+    }
+    if (!hidden) seasons.push({ ...season, episodeCount });
+  }
+
+  const visible: TvShowDetails = {
+    ...show,
+    seasons,
+    seasonCount: Math.max(0, show.seasonCount - hiddenSeasonCount),
+    episodeCount: Math.max(0, show.episodeCount - hiddenEpisodeCount),
+  };
+  return rule ? applyTvOverrides(visible, rule.overrides) : visible;
+});
+
+export const getSeasonDetails = cache(
+  async (showId: number, seasonNumber: number): Promise<SeasonDetails | null> => {
+    const [season, rule, showRules] = await Promise.all([
+      getTmdbSeasonDetails(showId, seasonNumber),
+      getTitleRule({ mediaType: "tv", tmdbId: showId }),
+      getShowRules(showId),
+    ]);
+    if (!season || rule?.hidden || showRules.hiddenSeasons.has(seasonNumber)) return null;
+
+    return {
+      ...season,
+      episodes: season.episodes.flatMap((episode) => {
+        const episodeRule = getEpisodeRule(showRules, seasonNumber, episode.episodeNumber);
+        if (!episodeRule) return [episode];
+        return episodeRule.hidden ? [] : [applyEpisodeOverrides(episode, episodeRule.overrides)];
+      }),
     };
   },
 );
