@@ -9,7 +9,7 @@ import { formatDate } from "@/lib/format";
 import { OpenAccountContext } from "./open-account";
 import { AdminIcon, UserAvatar } from "./UserIdentity";
 
-/** Columns shared by the header and every row; smaller screens drop Subscription, then Joined. */
+/** Shared desktop columns; mobile rows show identity and account status. */
 const GRID =
   "grid grid-cols-[minmax(0,1fr)_6.5rem_1rem] items-center gap-4 sm:grid-cols-[minmax(0,1fr)_8.5rem_6.5rem_1rem] md:grid-cols-[minmax(0,1fr)_8.5rem_6.5rem_9.5rem_1rem] max-md:grid-cols-[minmax(0,1fr)_1rem] max-md:gap-x-2 max-md:gap-y-1";
 

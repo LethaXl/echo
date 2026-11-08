@@ -7,9 +7,6 @@ import { APP_NAME } from "@/lib/brand";
 
 export const metadata: Metadata = { title: "Account Deactivated", robots: { index: false, follow: false } };
 
-/** Placeholder address for the prototype; it isn't a link and nothing is sent. */
-const SUPPORT_EMAIL = "support@echo.com";
-
 // US-64: the only page a signed-in deactivated account can open. Shows no account details.
 export default async function AccountDeactivatedPage() {
   if (!(await isCurrentAccountDeactivated())) redirect("/");
@@ -26,7 +23,9 @@ export default async function AccountDeactivatedPage() {
         <div className="mt-6 rounded-xl bg-elevated/60 px-5 py-4 max-md:mt-4 max-md:px-3">
           <p className="text-sm font-medium">Think this is a mistake?</p>
           <p className="mt-1 text-sm text-muted">
-            Contact our support team at <span className="font-medium text-accent">{SUPPORT_EMAIL}</span>
+            For account assistance, contact the project administrator at{" "}
+            <span className="font-medium text-accent">aseefnazrul [at] gmail [dot] com</span>.
+            Please include &quot;Echo&quot; in your email subject.
           </p>
         </div>
 

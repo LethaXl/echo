@@ -7,7 +7,6 @@ export const metadata: Metadata = { title: "Admin Panel", robots: { index: false
 const CARD =
   "group rounded-xl border border-line bg-surface px-8 py-6 text-center transition-colors duration-150 hover:border-accent/40 hover:bg-elevated max-md:rounded-md max-md:border-l-accent/60 max-md:px-4 max-md:py-3 max-md:text-left";
 
-// Each section is built in a later Sprint 4 story.
 const sections: { title: string; description: string; href?: string }[] = [
   {
     title: "Content Management",

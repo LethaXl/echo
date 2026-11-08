@@ -11,7 +11,7 @@ export type UpNext = {
   runtimeMinutes: number | null;
 };
 
-/** Everything the simulated player shows; all of it comes from TMDB. */
+/** Normalized content and navigation data for the simulated viewer. */
 export type ViewerContent = {
   /** Changes with the movie or episode, so playback never carries over. */
   key: string;

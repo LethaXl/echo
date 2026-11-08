@@ -110,7 +110,7 @@ function EchoPlusSubscription({
     billingOptions.find((option) => option.planId === subscription.planId)?.features ?? [];
   const nextPlan = switching ? subscription.scheduledPlan : null;
   const nextPeriod = nextPlan ? BILLING_PERIODS[nextPlan.billingInterval] : null;
-  // The simulated charge at the next renewal: the scheduled plan's price after a downgrade.
+  // Use the scheduled plan's renewal price when switching plans; otherwise use the current price.
   const renewalCents = nextPlan?.priceCents ?? subscription.priceCents;
 
   return (

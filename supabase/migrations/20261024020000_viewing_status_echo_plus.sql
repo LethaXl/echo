@@ -1,5 +1,5 @@
 -- US-41 through US-44. Reuse the initial schema's viewing_status table.
--- Stored values remain 'watching' and 'completed' (shown as "Watched").
+-- Stored values remain 'watching' and 'completed'.
 -- Existing unique constraint, update trigger, timestamps and ownership policies remain.
 begin;
 

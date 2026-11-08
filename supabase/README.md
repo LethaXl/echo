@@ -4,7 +4,7 @@ SQL migrations for Echo's database go in `supabase/migrations/`. To apply one, p
 
 ## Migrations
 
-Run these in order:
+For a new Supabase project, apply these migrations in order. For an existing project, check which migrations have already been applied before applying the remaining ones in order:
 
 1. `20261005000000_initial_schema.sql`: tables, policies, functions and the seeded Echo+ plans (below).
 2. `20261010000000_subscription_password_confirmation.sql` (US-24): `start_subscription()` only works on a session that signed in with a password in the last 5 minutes, so the password confirmation in the subscribe dialog can't be skipped by calling the function directly.
@@ -18,9 +18,9 @@ Run these in order:
 10. `20261109000000_content_management.sql` (US-50 to US-57): managed titles, seasons and episodes with admin edits and hidden status. See [Content management](#content-management-us-50-to-us-57).
 11. `20261110000000_user_management.sql` (US-61 to US-65): account deactivation and the admin-only account functions. See [User management](#user-management-us-61-to-us-65).
 
-### Apply Echo Wave Ratings (Sprint 3 Part 3)
+### Echo Wave Ratings verification
 
-After the earlier migrations, paste the entire contents of `supabase/migrations/20261024030000_echo_wave_ratings.sql` into **Supabase Dashboard > SQL Editor > New query** and select **Run**. This migration has **not** been applied automatically. No new credentials, environment variables or subscription setup are needed.
+After applying the migrations in the order above, verify Echo Wave Ratings as described below. No additional credentials, environment variables or subscription setup are needed.
 
 Personal ratings remain integers from 1 to 5 in `ratings.rating`. TMDB's public rating fields are unchanged. Updating a rating uses the same user/movie-or-TV/TMDB-ID record; clearing deletes only that rating. Echo+ expiry hides personal ratings without deleting them. Recently/oldest rated sorting uses `updated_at`, so changing a rating counts as new rating activity. The existing public aggregate function still exposes only averages/counts, never individual ratings or owners.
 
@@ -32,18 +32,17 @@ Manually verify:
 - Check Monthly/Annual access, cancellation through the paid period, expiry, resubscription restoring ratings, Free-user upgrade prompts and guest login redirects.
 - With publishable-key clients authenticated as two different users, verify each can only read/change their own ratings. Free users must not read/write/delete personal ratings; invalid IDs, media types and out-of-range ratings must be rejected. Use authenticated clients for RLS checks: SQL Editor's privileged role bypasses these policies.
 
-### Apply Viewing Status (Sprint 3 Part 2)
+### Viewing Status verification
 
-After the migrations above, paste `supabase/migrations/20261024020000_viewing_status_echo_plus.sql` into **Supabase Dashboard > SQL Editor > New query** and select **Run**. It has not been applied automatically. No new environment variables or subscription setup are needed.
+After applying the migrations in the order above, verify Viewing Status as described below. No additional environment variables or subscription setup are needed.
 
-The UI's **Watched** label maps to the existing database value `completed`; **Watching** maps to `watching`. Clear status deletes only that user's `viewing_status` row, leaving Watchlist untouched. Opening or finishing the simulated viewer does not write a status. Rows remain stored after Echo+ expiry and become accessible again on resubscription. Existing TV episode/season fields are preserved when updating a title's status.
+The UI's **Completed** label maps to the existing database value `completed`; **Watching** maps to `watching`. Clear status deletes only that user's `viewing_status` row, leaving Watchlist untouched. Opening or finishing the simulated viewer does not write a status. Rows remain stored after Echo+ expiry and become accessible again on resubscription. Existing TV episode/season fields are preserved when updating a title's status.
 
-Manually verify movie and TV status changes on detail pages and Viewing Activity cards; the Viewing Status tab's All/Watching/Watched counts and search; direct Watched marking; clear without changing Watchlist; refresh/relogin persistence; Free/expired-account denial and two-account isolation. Using authenticated clients with the publishable key, also verify RLS denies Free users' reads/writes/clears and rejects another user's IDs. SQL Editor's privileged role bypasses these policies and is not a valid isolation test.
+Manually verify movie and TV status changes on detail pages and Viewing Activity cards; the Viewing Status tab's All/Watching/Completed counts and search; direct Completed marking; clear without changing Watchlist; refresh/relogin persistence; Free/expired-account denial and two-account isolation. Using authenticated clients with the publishable key, also verify RLS denies Free users' reads/writes/clears and rejects another user's IDs. SQL Editor's privileged role bypasses these policies and is not a valid isolation test.
 
-### Apply the Sprint 3 Watchlist migration
+### Watchlist verification
 
-The migration file is supplied with the app; it has **not** been applied to your live database.
-After applying the earlier migrations, open **Supabase Dashboard > SQL Editor > New query**, paste the entire contents of `supabase/migrations/20261024000000_watchlist.sql`, and select **Run**. Then run `supabase/migrations/20261024010000_watchlist_echo_plus.sql` the same way. Both are safe to re-run. The new Echo+ policy must be applied for database-level enforcement; application checks alone do not protect direct Supabase requests. No service-role key or subscription changes are required.
+Apply the watchlist migrations as part of the ordered setup above before verifying this feature. The Echo+ policy must be applied for database-level enforcement; application checks alone do not protect direct Supabase requests. No service-role key or subscription changes are required.
 
 Watchlist entries store only a UUID, authenticated user ID, TMDB ID, media type and creation timestamp. Current poster/title/year metadata comes from TMDB using the existing public-metadata cache; private watchlist queries are request-specific and never placed in that cache. Search and sorting run only over the current user's loaded entries. Missing or temporarily unavailable TMDB metadata leaves a removable placeholder rather than hiding the saved entry.
 
@@ -62,7 +61,7 @@ Run `npm run lint`, `npx tsc --noEmit` and `npm run build` for local checks.
 
 ## Schema
 
-`20261005000000_initial_schema.sql` creates:
+Schema after applying all migrations:
 
 | Table | Purpose | Who can access |
 | --- | --- | --- |
@@ -70,7 +69,7 @@ Run `npm run lint`, `npx tsc --noEmit` and `npm run build` for local checks.
 | `subscription_plans` | The Free plan and the Echo+ plans (Monthly and Annual) | Anyone reads active plans; admins update price, benefits and availability (after `20261108000000_plan_management.sql`) |
 | `subscriptions` | Simulated Echo+ subscriptions | Owner reads; changes only via functions below |
 | `watchlist` | Saved titles | Echo+ owner reads, adds, removes (after `20261024010000_watchlist_echo_plus.sql`) |
-| `viewing_status` | Watching / Watched titles | Echo+ owner only after `20261024020000_viewing_status_echo_plus.sql` |
+| `viewing_status` | Watching / Completed titles | Echo+ owner only after `20261024020000_viewing_status_echo_plus.sql` |
 | `ratings` | Personal 1–5 Echo Wave rating per title | Echo+ owner only after `20261024030000_echo_wave_ratings.sql`; public aggregates via `get_rating_summary` |
 
 Database functions (call with `supabase.rpc(...)`):
@@ -109,7 +108,7 @@ update public.profiles set role = 'user'  where id = '<User UID>';  -- remove
 
 ### Plan management (US-58 to US-60)
 
-Admins manage plans at `/admin/plans`. Apply `20261108000000_plan_management.sql` in the SQL Editor after the earlier migrations; it hasn't been applied automatically. It's safe to re-run.
+Admins manage plans at `/admin/plans`. Include `20261108000000_plan_management.sql` in the ordered database setup above. It's safe to re-run.
 
 What it changes:
 
@@ -141,7 +140,7 @@ where s.status = 'active'
 
 ### Content management (US-50 to US-57)
 
-Admins manage content at `/admin/content`. Apply `20261109000000_content_management.sql` in the SQL Editor after the earlier migrations; it hasn't been applied automatically. It's safe to re-run, and it doesn't change any existing table. Until it's applied, Echo shows TMDB's catalogue unchanged (nothing can be hidden yet) and the admin content pages report that content can't be loaded. Once it's applied, if Echo can't check which content is hidden, it shows an unavailable or error state rather than risk showing hidden content.
+Admins manage content at `/admin/content`. Include `20261109000000_content_management.sql` in the ordered database setup above. It's safe to re-run, and it doesn't change any existing table. Without this migration, Echo shows TMDB's catalogue unchanged (nothing can be hidden yet) and the admin content pages report that content can't be loaded. With it applied, if Echo can't check which content is hidden, it shows an unavailable or error state rather than risk showing hidden content.
 
 TMDB stays the catalogue. Echo only stores the titles an admin has added, edited or hidden:
 
@@ -160,12 +159,12 @@ TMDB stays the catalogue. Echo only stores the titles an admin has added, edited
 
 ### User management (US-61 to US-65)
 
-Admins manage accounts at `/admin/users`. Apply `20261110000000_user_management.sql` in the SQL Editor after the earlier migrations; it hasn't been applied automatically. It's safe to re-run and only adds `profiles.deactivated_at` (null = active); no existing data changes. Until it's applied, nobody can be deactivated and the page reports that accounts can't be loaded.
+Admins manage accounts at `/admin/users`. Include `20261110000000_user_management.sql` in the ordered database setup above. It's safe to re-run and adds `profiles.deactivated_at` (null = active), deactivation enforcement and admin-only account functions without changing existing account data. Without this migration, nobody can be deactivated and the page reports that accounts can't be loaded.
 
 - `admin_list_users`, `admin_get_user` and `admin_set_user_active` are the only way in. Each checks `is_admin()` and runs with the admin's own session. Emails are read from `auth.users` inside these functions, so no service role key is used and no other account data is exposed. Search (name or email, case-insensitive), the status filter and pagination (20 per page, newest first) all run in the database.
 - Admin accounts can't be deactivated by anyone, including themselves. `admin_set_user_active` checks the role while holding a lock on the profile, so a concurrent role change can't slip past. `deactivated_at` can't be changed any other way through the API.
 - A deactivated account keeps its sign-in, profile, subscription (and its schedule and recorded price), watchlist, ratings and viewing history. While deactivated, the database refuses every insert, update or delete made with that account's session, including through the subscription and account functions, and hides its rows from direct reads. Scheduled renewals and Dashboard edits aren't affected.
-- In the app, signed-in deactivated accounts only see the Account Deactivated screen (with Log Out), including sessions that were already open. Reactivating restores access straight away; Echo+ then follows the subscription's current state, so an expired subscription means Free.
+- On subsequent server checks, accounts confirmed as deactivated are redirected to the Account Deactivated screen (with Log Out). Already-rendered pages do not update automatically. Reactivated accounts regain access on subsequent checks; Echo+ then follows the subscription's current state, so an expired subscription means Free. Failed account-status lookups currently leave the account treated as active by the application; database policies and write triggers enforce deactivation separately.
 - Supabase Auth's own ban isn't used, so a deactivated member can still sign in (and then sees the deactivation screen) or reset their password.
 
 ## Subscriptions
@@ -233,4 +232,4 @@ create policy "Users can delete their own rows"
 ## Keys
 
 - The publishable key (`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`) is public and relies on RLS.
-- The service role / secret key bypasses RLS. It must never be committed, used in client code, or given a `NEXT_PUBLIC_` prefix. Admin features will use separate server-side authorization.
+- The service role / secret key bypasses RLS. It must never be committed, used in client code, or given a `NEXT_PUBLIC_` prefix. Admin features enforce server-side authorization and database policies.
