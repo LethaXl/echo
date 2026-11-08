@@ -1,0 +1,857 @@
+[
+  {
+    "label": "Avengers",
+    "requested": "The Avengers",
+    "year": 2012,
+    "mediaType": "movie",
+    "tmdbId": 24428,
+    "verifiedTitle": "The Avengers",
+    "verifiedDate": "2012-04-25"
+  },
+  {
+    "label": "Avengers",
+    "requested": "Avengers: Age of Ultron",
+    "year": 2015,
+    "mediaType": "movie",
+    "tmdbId": 99861,
+    "verifiedTitle": "Avengers: Age of Ultron",
+    "verifiedDate": "2015-04-22"
+  },
+  {
+    "label": "Avengers",
+    "requested": "Avengers: Infinity War",
+    "year": 2018,
+    "mediaType": "movie",
+    "tmdbId": 299536,
+    "verifiedTitle": "Avengers: Infinity War",
+    "verifiedDate": "2018-04-25"
+  },
+  {
+    "label": "Avengers",
+    "requested": "Avengers: Endgame",
+    "year": 2019,
+    "mediaType": "movie",
+    "tmdbId": 299534,
+    "verifiedTitle": "Avengers: Endgame",
+    "verifiedDate": "2019-04-24"
+  },
+  {
+    "label": "Avengers",
+    "requested": "Captain America: Civil War",
+    "year": 2016,
+    "mediaType": "movie",
+    "tmdbId": 271110,
+    "verifiedTitle": "Captain America: Civil War",
+    "verifiedDate": "2016-04-27"
+  },
+  {
+    "label": "Spider-Man",
+    "requested": "Spider-Man: Homecoming",
+    "year": 2017,
+    "mediaType": "movie",
+    "tmdbId": 315635,
+    "verifiedTitle": "Spider-Man: Homecoming",
+    "verifiedDate": "2017-07-05"
+  },
+  {
+    "label": "Spider-Man",
+    "requested": "Spider-Man: Far From Home",
+    "year": 2019,
+    "mediaType": "movie",
+    "tmdbId": 429617,
+    "verifiedTitle": "Spider-Man: Far From Home",
+    "verifiedDate": "2019-06-28"
+  },
+  {
+    "label": "Spider-Man",
+    "requested": "Spider-Man: No Way Home",
+    "year": 2021,
+    "mediaType": "movie",
+    "tmdbId": 634649,
+    "verifiedTitle": "Spider-Man: No Way Home",
+    "verifiedDate": "2021-12-15"
+  },
+  {
+    "label": "Spider-Man",
+    "requested": "The Amazing Spider-Man",
+    "year": 2012,
+    "mediaType": "movie",
+    "tmdbId": 1930,
+    "verifiedTitle": "The Amazing Spider-Man",
+    "verifiedDate": "2012-06-23"
+  },
+  {
+    "label": "Spider-Man",
+    "requested": "The Amazing Spider-Man 2",
+    "year": 2014,
+    "mediaType": "movie",
+    "tmdbId": 102382,
+    "verifiedTitle": "The Amazing Spider-Man 2",
+    "verifiedDate": "2014-04-16"
+  },
+  {
+    "label": "Batman",
+    "requested": "Batman Begins",
+    "year": 2005,
+    "mediaType": "movie",
+    "tmdbId": 272,
+    "verifiedTitle": "Batman Begins",
+    "verifiedDate": "2005-06-10"
+  },
+  {
+    "label": "Batman",
+    "requested": "The Dark Knight",
+    "year": 2008,
+    "mediaType": "movie",
+    "tmdbId": 155,
+    "verifiedTitle": "The Dark Knight",
+    "verifiedDate": "2008-07-16"
+  },
+  {
+    "label": "Batman",
+    "requested": "The Dark Knight Rises",
+    "year": 2012,
+    "mediaType": "movie",
+    "tmdbId": 49026,
+    "verifiedTitle": "The Dark Knight Rises",
+    "verifiedDate": "2012-07-17"
+  },
+  {
+    "label": "Pirates of the Caribbean",
+    "requested": "The Curse of the Black Pearl",
+    "year": 2003,
+    "mediaType": "movie",
+    "tmdbId": 22,
+    "verifiedTitle": "Pirates of the Caribbean: The Curse of the Black Pearl",
+    "verifiedDate": "2003-07-09"
+  },
+  {
+    "label": "Pirates of the Caribbean",
+    "requested": "Dead Man's Chest",
+    "year": 2006,
+    "mediaType": "movie",
+    "tmdbId": 58,
+    "verifiedTitle": "Pirates of the Caribbean: Dead Man's Chest",
+    "verifiedDate": "2006-07-06"
+  },
+  {
+    "label": "Pirates of the Caribbean",
+    "requested": "At World's End",
+    "year": 2007,
+    "mediaType": "movie",
+    "tmdbId": 285,
+    "verifiedTitle": "Pirates of the Caribbean: At World's End",
+    "verifiedDate": "2007-05-19"
+  },
+  {
+    "label": "Pirates of the Caribbean",
+    "requested": "On Stranger Tides",
+    "year": 2011,
+    "mediaType": "movie",
+    "tmdbId": 1865,
+    "verifiedTitle": "Pirates of the Caribbean: On Stranger Tides",
+    "verifiedDate": "2011-05-15"
+  },
+  {
+    "label": "Pirates of the Caribbean",
+    "requested": "Dead Men Tell No Tales",
+    "year": 2017,
+    "mediaType": "movie",
+    "tmdbId": 166426,
+    "verifiedTitle": "Pirates of the Caribbean: Dead Men Tell No Tales",
+    "verifiedDate": "2017-05-23"
+  },
+  {
+    "label": "Harry Potter",
+    "requested": "Harry Potter and the Philosopher's Stone",
+    "year": 2001,
+    "mediaType": "movie",
+    "tmdbId": 671,
+    "verifiedTitle": "Harry Potter and the Philosopher's Stone",
+    "verifiedDate": "2001-11-16"
+  },
+  {
+    "label": "Harry Potter",
+    "requested": "Harry Potter and the Chamber of Secrets",
+    "year": 2002,
+    "mediaType": "movie",
+    "tmdbId": 672,
+    "verifiedTitle": "Harry Potter and the Chamber of Secrets",
+    "verifiedDate": "2002-11-13"
+  },
+  {
+    "label": "Harry Potter",
+    "requested": "Harry Potter and the Prisoner of Azkaban",
+    "year": 2004,
+    "mediaType": "movie",
+    "tmdbId": 673,
+    "verifiedTitle": "Harry Potter and the Prisoner of Azkaban",
+    "verifiedDate": "2004-05-31"
+  },
+  {
+    "label": "Harry Potter",
+    "requested": "Harry Potter and the Goblet of Fire",
+    "year": 2005,
+    "mediaType": "movie",
+    "tmdbId": 674,
+    "verifiedTitle": "Harry Potter and the Goblet of Fire",
+    "verifiedDate": "2005-11-16"
+  },
+  {
+    "label": "Harry Potter",
+    "requested": "Harry Potter and the Order of the Phoenix",
+    "year": 2007,
+    "mediaType": "movie",
+    "tmdbId": 675,
+    "verifiedTitle": "Harry Potter and the Order of the Phoenix",
+    "verifiedDate": "2007-07-08"
+  },
+  {
+    "label": "The Lord of the Rings",
+    "requested": "The Fellowship of the Ring",
+    "year": 2001,
+    "mediaType": "movie",
+    "tmdbId": 120,
+    "verifiedTitle": "The Lord of the Rings: The Fellowship of the Ring",
+    "verifiedDate": "2001-12-18"
+  },
+  {
+    "label": "The Lord of the Rings",
+    "requested": "The Two Towers",
+    "year": 2002,
+    "mediaType": "movie",
+    "tmdbId": 121,
+    "verifiedTitle": "The Lord of the Rings: The Two Towers",
+    "verifiedDate": "2002-12-18"
+  },
+  {
+    "label": "The Lord of the Rings",
+    "requested": "The Return of the King",
+    "year": 2003,
+    "mediaType": "movie",
+    "tmdbId": 122,
+    "verifiedTitle": "The Lord of the Rings: The Return of the King",
+    "verifiedDate": "2003-12-17"
+  },
+  {
+    "label": "The Lord of the Rings",
+    "requested": "The Hobbit: An Unexpected Journey",
+    "year": 2012,
+    "mediaType": "movie",
+    "tmdbId": 49051,
+    "verifiedTitle": "The Hobbit: An Unexpected Journey",
+    "verifiedDate": "2012-12-12"
+  },
+  {
+    "label": "The Lord of the Rings",
+    "requested": "The Hobbit: The Desolation of Smaug",
+    "year": 2013,
+    "mediaType": "movie",
+    "tmdbId": 57158,
+    "verifiedTitle": "The Hobbit: The Desolation of Smaug",
+    "verifiedDate": "2013-12-11"
+  },
+  {
+    "label": "Indiana Jones",
+    "requested": "Raiders of the Lost Ark",
+    "year": 1981,
+    "mediaType": "movie",
+    "tmdbId": 85,
+    "verifiedTitle": "Raiders of the Lost Ark",
+    "verifiedDate": "1981-06-12"
+  },
+  {
+    "label": "Indiana Jones",
+    "requested": "Indiana Jones and the Temple of Doom",
+    "year": 1984,
+    "mediaType": "movie",
+    "tmdbId": 87,
+    "verifiedTitle": "Indiana Jones and the Temple of Doom",
+    "verifiedDate": "1984-05-23"
+  },
+  {
+    "label": "Indiana Jones",
+    "requested": "Indiana Jones and the Last Crusade",
+    "year": 1989,
+    "mediaType": "movie",
+    "tmdbId": 89,
+    "verifiedTitle": "Indiana Jones and the Last Crusade",
+    "verifiedDate": "1989-05-24"
+  },
+  {
+    "label": "Indiana Jones",
+    "requested": "Indiana Jones and the Kingdom of the Crystal Skull",
+    "year": 2008,
+    "mediaType": "movie",
+    "tmdbId": 217,
+    "verifiedTitle": "Indiana Jones and the Kingdom of the Crystal Skull",
+    "verifiedDate": "2008-05-21"
+  },
+  {
+    "label": "Indiana Jones",
+    "requested": "Indiana Jones and the Dial of Destiny",
+    "year": 2023,
+    "mediaType": "movie",
+    "tmdbId": 335977,
+    "verifiedTitle": "Indiana Jones and the Dial of Destiny",
+    "verifiedDate": "2023-06-25"
+  },
+  {
+    "label": "John Wick",
+    "requested": "John Wick",
+    "year": 2014,
+    "mediaType": "movie",
+    "tmdbId": 245891,
+    "verifiedTitle": "John Wick",
+    "verifiedDate": "2014-10-16"
+  },
+  {
+    "label": "John Wick",
+    "requested": "John Wick: Chapter 2",
+    "year": 2017,
+    "mediaType": "movie",
+    "tmdbId": 324552,
+    "verifiedTitle": "John Wick: Chapter 2",
+    "verifiedDate": "2017-02-08"
+  },
+  {
+    "label": "John Wick",
+    "requested": "John Wick: Chapter 3 – Parabellum",
+    "year": 2019,
+    "mediaType": "movie",
+    "tmdbId": 458156,
+    "verifiedTitle": "John Wick: Chapter 3 - Parabellum",
+    "verifiedDate": "2019-05-15"
+  },
+  {
+    "label": "John Wick",
+    "requested": "John Wick: Chapter 4",
+    "year": 2023,
+    "mediaType": "movie",
+    "tmdbId": 603692,
+    "verifiedTitle": "John Wick: Chapter 4",
+    "verifiedDate": "2023-03-21"
+  },
+  {
+    "label": "John Wick",
+    "requested": "From the World of John Wick: Ballerina",
+    "year": 2025,
+    "mediaType": "movie",
+    "tmdbId": 541671,
+    "verifiedTitle": "Ballerina",
+    "verifiedDate": "2025-06-04"
+  },
+  {
+    "label": "Mission: Impossible",
+    "requested": "Mission: Impossible",
+    "year": 1996,
+    "mediaType": "movie",
+    "tmdbId": 954,
+    "verifiedTitle": "Mission: Impossible",
+    "verifiedDate": "1996-05-22"
+  },
+  {
+    "label": "Mission: Impossible",
+    "requested": "Mission: Impossible 2",
+    "year": 2000,
+    "mediaType": "movie",
+    "tmdbId": 955,
+    "verifiedTitle": "Mission: Impossible II",
+    "verifiedDate": "2000-05-24"
+  },
+  {
+    "label": "Mission: Impossible",
+    "requested": "Mission: Impossible III",
+    "year": 2006,
+    "mediaType": "movie",
+    "tmdbId": 956,
+    "verifiedTitle": "Mission: Impossible III",
+    "verifiedDate": "2006-04-25"
+  },
+  {
+    "label": "Mission: Impossible",
+    "requested": "Mission: Impossible – Ghost Protocol",
+    "year": 2011,
+    "mediaType": "movie",
+    "tmdbId": 56292,
+    "verifiedTitle": "Mission: Impossible - Ghost Protocol",
+    "verifiedDate": "2011-12-07"
+  },
+  {
+    "label": "Mission: Impossible",
+    "requested": "Mission: Impossible – Rogue Nation",
+    "year": 2015,
+    "mediaType": "movie",
+    "tmdbId": 177677,
+    "verifiedTitle": "Mission: Impossible - Rogue Nation",
+    "verifiedDate": "2015-07-28"
+  },
+  {
+    "label": "Fast & Furious",
+    "requested": "The Fast and the Furious",
+    "year": 2001,
+    "mediaType": "movie",
+    "tmdbId": 9799,
+    "verifiedTitle": "The Fast and the Furious",
+    "verifiedDate": "2001-06-22"
+  },
+  {
+    "label": "Fast & Furious",
+    "requested": "2 Fast 2 Furious",
+    "year": 2003,
+    "mediaType": "movie",
+    "tmdbId": 584,
+    "verifiedTitle": "2 Fast 2 Furious",
+    "verifiedDate": "2003-06-05"
+  },
+  {
+    "label": "Fast & Furious",
+    "requested": "The Fast and the Furious: Tokyo Drift",
+    "year": 2006,
+    "mediaType": "movie",
+    "tmdbId": 9615,
+    "verifiedTitle": "The Fast and the Furious: Tokyo Drift",
+    "verifiedDate": "2006-06-03"
+  },
+  {
+    "label": "Fast & Furious",
+    "requested": "Fast & Furious",
+    "year": 2009,
+    "mediaType": "movie",
+    "tmdbId": 13804,
+    "verifiedTitle": "Fast & Furious",
+    "verifiedDate": "2009-04-02"
+  },
+  {
+    "label": "Fast & Furious",
+    "requested": "Fast Five",
+    "year": 2011,
+    "mediaType": "movie",
+    "tmdbId": 51497,
+    "verifiedTitle": "Fast Five",
+    "verifiedDate": "2011-04-20"
+  },
+  {
+    "label": "Die Hard",
+    "requested": "Die Hard",
+    "year": 1988,
+    "mediaType": "movie",
+    "tmdbId": 562,
+    "verifiedTitle": "Die Hard",
+    "verifiedDate": "1988-07-15"
+  },
+  {
+    "label": "Die Hard",
+    "requested": "Die Hard 2",
+    "year": 1990,
+    "mediaType": "movie",
+    "tmdbId": 1573,
+    "verifiedTitle": "Die Hard 2",
+    "verifiedDate": "1990-07-03"
+  },
+  {
+    "label": "Die Hard",
+    "requested": "Die Hard with a Vengeance",
+    "year": 1995,
+    "mediaType": "movie",
+    "tmdbId": 1572,
+    "verifiedTitle": "Die Hard: With a Vengeance",
+    "verifiedDate": "1995-05-19"
+  },
+  {
+    "label": "Die Hard",
+    "requested": "Live Free or Die Hard",
+    "year": 2007,
+    "mediaType": "movie",
+    "tmdbId": 1571,
+    "verifiedTitle": "Live Free or Die Hard",
+    "verifiedDate": "2007-06-20"
+  },
+  {
+    "label": "Die Hard",
+    "requested": "A Good Day to Die Hard",
+    "year": 2013,
+    "mediaType": "movie",
+    "tmdbId": 47964,
+    "verifiedTitle": "A Good Day to Die Hard",
+    "verifiedDate": "2013-02-06"
+  },
+  {
+    "label": "Final Destination",
+    "requested": "Final Destination",
+    "year": 2000,
+    "mediaType": "movie",
+    "tmdbId": 9532,
+    "verifiedTitle": "Final Destination",
+    "verifiedDate": "2000-03-17"
+  },
+  {
+    "label": "Final Destination",
+    "requested": "Final Destination 2",
+    "year": 2003,
+    "mediaType": "movie",
+    "tmdbId": 9358,
+    "verifiedTitle": "Final Destination 2",
+    "verifiedDate": "2003-01-31"
+  },
+  {
+    "label": "Final Destination",
+    "requested": "Final Destination 3",
+    "year": 2006,
+    "mediaType": "movie",
+    "tmdbId": 9286,
+    "verifiedTitle": "Final Destination 3",
+    "verifiedDate": "2006-02-09"
+  },
+  {
+    "label": "Final Destination",
+    "requested": "The Final Destination",
+    "year": 2009,
+    "mediaType": "movie",
+    "tmdbId": 19912,
+    "verifiedTitle": "The Final Destination",
+    "verifiedDate": "2009-08-26"
+  },
+  {
+    "label": "Final Destination",
+    "requested": "Final Destination 5",
+    "year": 2011,
+    "mediaType": "movie",
+    "tmdbId": 55779,
+    "verifiedTitle": "Final Destination 5",
+    "verifiedDate": "2011-08-12"
+  },
+  {
+    "label": "Scream",
+    "requested": "Scream",
+    "year": 1996,
+    "mediaType": "movie",
+    "tmdbId": 4232,
+    "verifiedTitle": "Scream",
+    "verifiedDate": "1996-12-20"
+  },
+  {
+    "label": "Scream",
+    "requested": "Scream 2",
+    "year": 1997,
+    "mediaType": "movie",
+    "tmdbId": 4233,
+    "verifiedTitle": "Scream 2",
+    "verifiedDate": "1997-12-12"
+  },
+  {
+    "label": "Scream",
+    "requested": "Scream 3",
+    "year": 2000,
+    "mediaType": "movie",
+    "tmdbId": 4234,
+    "verifiedTitle": "Scream 3",
+    "verifiedDate": "2000-02-04"
+  },
+  {
+    "label": "Scream",
+    "requested": "Scream 4",
+    "year": 2011,
+    "mediaType": "movie",
+    "tmdbId": 41446,
+    "verifiedTitle": "Scream 4",
+    "verifiedDate": "2011-04-13"
+  },
+  {
+    "label": "Scream",
+    "requested": "Scream",
+    "year": 2022,
+    "mediaType": "movie",
+    "tmdbId": 646385,
+    "verifiedTitle": "Scream",
+    "verifiedDate": "2022-01-12"
+  },
+  {
+    "label": "The Hunger Games",
+    "requested": "The Hunger Games",
+    "year": 2012,
+    "mediaType": "movie",
+    "tmdbId": 70160,
+    "verifiedTitle": "The Hunger Games",
+    "verifiedDate": "2012-03-12"
+  },
+  {
+    "label": "The Hunger Games",
+    "requested": "Catching Fire",
+    "year": 2013,
+    "mediaType": "movie",
+    "tmdbId": 101299,
+    "verifiedTitle": "The Hunger Games: Catching Fire",
+    "verifiedDate": "2013-11-15"
+  },
+  {
+    "label": "The Hunger Games",
+    "requested": "Mockingjay – Part 1",
+    "year": 2014,
+    "mediaType": "movie",
+    "tmdbId": 131631,
+    "verifiedTitle": "The Hunger Games: Mockingjay - Part 1",
+    "verifiedDate": "2014-11-19"
+  },
+  {
+    "label": "The Hunger Games",
+    "requested": "Mockingjay – Part 2",
+    "year": 2015,
+    "mediaType": "movie",
+    "tmdbId": 131634,
+    "verifiedTitle": "The Hunger Games: Mockingjay - Part 2",
+    "verifiedDate": "2015-11-18"
+  },
+  {
+    "label": "The Hunger Games",
+    "requested": "The Ballad of Songbirds & Snakes",
+    "year": 2023,
+    "mediaType": "movie",
+    "tmdbId": 695721,
+    "verifiedTitle": "The Hunger Games: The Ballad of Songbirds & Snakes",
+    "verifiedDate": "2023-11-15"
+  },
+  {
+    "label": "Toy Story",
+    "requested": "Toy Story",
+    "year": 1995,
+    "mediaType": "movie",
+    "tmdbId": 862,
+    "verifiedTitle": "Toy Story",
+    "verifiedDate": "1995-11-22"
+  },
+  {
+    "label": "Toy Story",
+    "requested": "Toy Story 2",
+    "year": 1999,
+    "mediaType": "movie",
+    "tmdbId": 863,
+    "verifiedTitle": "Toy Story 2",
+    "verifiedDate": "1999-10-30"
+  },
+  {
+    "label": "Toy Story",
+    "requested": "Toy Story 3",
+    "year": 2010,
+    "mediaType": "movie",
+    "tmdbId": 10193,
+    "verifiedTitle": "Toy Story 3",
+    "verifiedDate": "2010-06-16"
+  },
+  {
+    "label": "Toy Story",
+    "requested": "Toy Story 4",
+    "year": 2019,
+    "mediaType": "movie",
+    "tmdbId": 301528,
+    "verifiedTitle": "Toy Story 4",
+    "verifiedDate": "2019-06-19"
+  },
+  {
+    "label": "Toy Story",
+    "requested": "Toy Story 5",
+    "year": 2026,
+    "mediaType": "movie",
+    "tmdbId": 1084244,
+    "verifiedTitle": "Toy Story 5",
+    "verifiedDate": "2026-06-17"
+  },
+  {
+    "label": "Kung Fu Panda",
+    "requested": "Kung Fu Panda",
+    "year": 2008,
+    "mediaType": "movie",
+    "tmdbId": 9502,
+    "verifiedTitle": "Kung Fu Panda",
+    "verifiedDate": "2008-06-04"
+  },
+  {
+    "label": "Kung Fu Panda",
+    "requested": "Kung Fu Panda 2",
+    "year": 2011,
+    "mediaType": "movie",
+    "tmdbId": 49444,
+    "verifiedTitle": "Kung Fu Panda 2",
+    "verifiedDate": "2011-05-25"
+  },
+  {
+    "label": "Kung Fu Panda",
+    "requested": "Kung Fu Panda 3",
+    "year": 2016,
+    "mediaType": "movie",
+    "tmdbId": 140300,
+    "verifiedTitle": "Kung Fu Panda 3",
+    "verifiedDate": "2016-01-23"
+  },
+  {
+    "label": "Kung Fu Panda",
+    "requested": "Kung Fu Panda 4",
+    "year": 2024,
+    "mediaType": "movie",
+    "tmdbId": 1011985,
+    "verifiedTitle": "Kung Fu Panda 4",
+    "verifiedDate": "2024-03-02"
+  },
+  {
+    "label": "Shrek",
+    "requested": "Shrek",
+    "year": 2001,
+    "mediaType": "movie",
+    "tmdbId": 808,
+    "verifiedTitle": "Shrek",
+    "verifiedDate": "2001-05-18"
+  },
+  {
+    "label": "Shrek",
+    "requested": "Shrek 2",
+    "year": 2004,
+    "mediaType": "movie",
+    "tmdbId": 809,
+    "verifiedTitle": "Shrek 2",
+    "verifiedDate": "2004-05-19"
+  },
+  {
+    "label": "Shrek",
+    "requested": "Shrek the Third",
+    "year": 2007,
+    "mediaType": "movie",
+    "tmdbId": 810,
+    "verifiedTitle": "Shrek the Third",
+    "verifiedDate": "2007-05-17"
+  },
+  {
+    "label": "Shrek",
+    "requested": "Shrek Forever After",
+    "year": 2010,
+    "mediaType": "movie",
+    "tmdbId": 10192,
+    "verifiedTitle": "Shrek Forever After",
+    "verifiedDate": "2010-05-16"
+  },
+  {
+    "label": "Shrek",
+    "requested": "Puss in Boots",
+    "year": 2011,
+    "mediaType": "movie",
+    "tmdbId": 417859,
+    "verifiedTitle": "Puss in Boots",
+    "verifiedDate": "2011-10-27"
+  },
+  {
+    "label": "Star Wars",
+    "requested": "Star Wars: Episode I – The Phantom Menace",
+    "year": 1999,
+    "mediaType": "movie",
+    "tmdbId": 1893,
+    "verifiedTitle": "Star Wars: Episode I - The Phantom Menace",
+    "verifiedDate": "1999-05-19"
+  },
+  {
+    "label": "Star Wars",
+    "requested": "Episode II – Attack of the Clones",
+    "year": 2002,
+    "mediaType": "movie",
+    "tmdbId": 1894,
+    "verifiedTitle": "Star Wars: Episode II - Attack of the Clones",
+    "verifiedDate": "2002-05-15"
+  },
+  {
+    "label": "Star Wars",
+    "requested": "Episode III – Revenge of the Sith",
+    "year": 2005,
+    "mediaType": "movie",
+    "tmdbId": 1895,
+    "verifiedTitle": "Star Wars: Episode III - Revenge of the Sith",
+    "verifiedDate": "2005-05-17"
+  },
+  {
+    "label": "Star Wars",
+    "requested": "Star Wars",
+    "year": 1977,
+    "mediaType": "movie",
+    "tmdbId": 11,
+    "verifiedTitle": "Star Wars",
+    "verifiedDate": "1977-05-25"
+  },
+  {
+    "label": "Star Wars",
+    "requested": "The Empire Strikes Back",
+    "year": 1980,
+    "mediaType": "movie",
+    "tmdbId": 1891,
+    "verifiedTitle": "The Empire Strikes Back",
+    "verifiedDate": "1980-05-20"
+  },
+  {
+    "label": "Men in Black",
+    "requested": "Men in Black",
+    "year": 1997,
+    "mediaType": "movie",
+    "tmdbId": 607,
+    "verifiedTitle": "Men in Black",
+    "verifiedDate": "1997-07-02"
+  },
+  {
+    "label": "Men in Black",
+    "requested": "Men in Black II",
+    "year": 2002,
+    "mediaType": "movie",
+    "tmdbId": 608,
+    "verifiedTitle": "Men in Black II",
+    "verifiedDate": "2002-07-03"
+  },
+  {
+    "label": "Men in Black",
+    "requested": "Men in Black 3",
+    "year": 2012,
+    "mediaType": "movie",
+    "tmdbId": 41154,
+    "verifiedTitle": "Men in Black 3",
+    "verifiedDate": "2012-05-23"
+  },
+  {
+    "label": "Men in Black",
+    "requested": "Men in Black: International",
+    "year": 2019,
+    "mediaType": "movie",
+    "tmdbId": 479455,
+    "verifiedTitle": "Men in Black: International",
+    "verifiedDate": "2019-06-12"
+  },
+  {
+    "label": "Dexter Universe",
+    "requested": "Dexter",
+    "year": 2006,
+    "mediaType": "tv",
+    "tmdbId": 1405,
+    "verifiedTitle": "Dexter",
+    "verifiedDate": "2006-10-01"
+  },
+  {
+    "label": "Dexter Universe",
+    "requested": "Dexter: New Blood",
+    "year": 2021,
+    "mediaType": "tv",
+    "tmdbId": 131927,
+    "verifiedTitle": "Dexter: New Blood",
+    "verifiedDate": "2021-11-07"
+  },
+  {
+    "label": "Dexter Universe",
+    "requested": "Dexter: Original Sin",
+    "year": 2024,
+    "mediaType": "tv",
+    "tmdbId": 219937,
+    "verifiedTitle": "Dexter: Original Sin",
+    "verifiedDate": "2024-12-15"
+  },
+  {
+    "label": "Dexter Universe",
+    "requested": "Dexter: Resurrection",
+    "year": 2025,
+    "mediaType": "tv",
+    "tmdbId": 259909,
+    "verifiedTitle": "Dexter: Resurrection",
+    "verifiedDate": "2025-07-13"
+  }
+]

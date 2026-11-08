@@ -5,24 +5,24 @@ import EchoTrail from "@/components/media/EchoTrail";
 import MediaRow from "@/components/media/MediaRow";
 import PageHeader from "@/components/PageHeader";
 import { isFiltered, parseBrowseFilters } from "@/lib/browse";
+import { echoSelectionIndex, hasEchoPoster } from "@/lib/echo";
 import { normalizeSearchQuery } from "@/lib/search";
 import {
   getEchoPicks,
-  getEchoTrail,
   getPopularMovies,
   getPopularTvShows,
   getTrending,
 } from "@/lib/tmdb/catalogue";
+import { getDiscoveryEcho } from "@/lib/tmdb/echo-discovery";
 
 export const metadata: Metadata = { title: "Browse" };
 
-/** Reads `?echo=N`, the position of the Echo Trail's start among the Trending titles. */
-function parseEchoIndex(value: string | string[] | undefined, count: number): number {
-  const index = Number.parseInt(typeof value === "string" ? value : "", 10);
-  return count > 0 && Number.isFinite(index) && index >= 0 ? index % count : 0;
-}
-
-async function BrowseDiscovery({ echo }: { echo: string | string[] | undefined }) {
+async function BrowseDiscovery({ echo, seed, echoFrom, previous }: {
+  echo: string | string[] | undefined;
+  seed: string;
+  echoFrom: string | string[] | undefined;
+  previous: string | string[] | undefined;
+}) {
   const [trending, echoPicks, popularMovies, popularTvShows] = await Promise.all([
     getTrending(),
     getEchoPicks(),
@@ -30,21 +30,29 @@ async function BrowseDiscovery({ echo }: { echo: string | string[] | undefined }
     getPopularTvShows(),
   ]);
 
-  const echoStarts = trending?.filter((item) => item.posterPath) ?? [];
-  const echoIndex = parseEchoIndex(echo, echoStarts.length);
-  const echoStart = echoStarts[echoIndex] ?? null;
-  const echoTrail = echoStart ? await getEchoTrail(echoStart) : [];
+  const echoStarts = trending?.filter(hasEchoPoster) ?? [];
+  const selectedEcho = await getDiscoveryEcho(trending, { echo, seed, echoFrom, previous });
+  const echoStart = selectedEcho?.start ?? null;
+  const nextSeed = String((Number(seed) + 1) >>> 0);
+  const otherStarts = echoStarts.flatMap((item, index) =>
+    item.mediaType === echoStart?.mediaType && item.tmdbId === echoStart.tmdbId ? [] : [index],
+  );
+  const nextIndex = otherStarts[echoSelectionIndex(`${nextSeed}:start`, otherStarts.length)];
 
   return (
     <div className="flex flex-col gap-14">
       <MediaRow title="Trending Now" items={trending} ranked />
-      <EchoTrail
-        start={echoStart}
-        related={echoTrail}
-        nextHref={
-          echoStarts.length > 1 ? `/browse?echo=${(echoIndex + 1) % echoStarts.length}` : null
-        }
-      />
+      {selectedEcho && (
+        <EchoTrail
+          start={selectedEcho.start}
+          related={selectedEcho.related}
+          nextHref={
+            `/browse?seed=${nextSeed}${nextIndex !== undefined ? `&echo=${nextIndex}` : ""}`
+              + `&echoFrom=${selectedEcho.start.mediaType}-${selectedEcho.start.tmdbId}`
+              + `&echoPrevious=${encodeURIComponent(selectedEcho.id)}`
+          }
+        />
+      )}
       <MediaRow title="Echo Picks" echoMark items={echoPicks} />
       <div className="border-t border-line pt-10">
         <MediaRow title="Popular Movies" items={popularMovies} showMediaType={false} />
@@ -77,7 +85,13 @@ export default async function BrowsePage({ searchParams }: PageProps<"/browse">)
         {query || isFiltered(filters) ? (
           <BrowseResults query={query} filters={filters} />
         ) : (
-          <BrowseDiscovery echo={params.echo} />
+          <BrowseDiscovery
+            echo={params.echo}
+            echoFrom={params.echoFrom}
+            previous={params.echoPrevious}
+            seed={typeof params.seed === "string" && /^\d{1,10}$/.test(params.seed)
+              ? String(Number(params.seed) >>> 0) : "0"}
+          />
         )}
       </BrowseSearch>
     </div>

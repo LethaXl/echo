@@ -5,7 +5,8 @@ import {
   DEFAULT_FILTERS,
   genreIdFor,
 } from "@/lib/browse";
-import { applyTitleRules } from "@/lib/content/rules";
+import { applyTitleRules, getTitleRule } from "@/lib/content/rules";
+import { echoShortlistScore, hasEchoPoster, selectEchoCandidate, type EchoCandidate } from "@/lib/echo";
 import { isTmdbConfigured, tmdbFetch } from "@/lib/tmdb/client";
 import type {
   TmdbMovieResult,
@@ -481,44 +482,163 @@ export function getEchoPicks() {
 }
 
 const ECHO_TRAIL_LENGTH = 5;
+const ECHO_SHORTLIST_SIZE = 3;
+const ECHO_METADATA_BUDGET = 12;
 
-/** TMDB recommendations for a title, falling back to TMDB's "similar" list when empty. */
-async function getRelatedOf<T>(
-  basePath: string,
-  normalize: (result: T) => CatalogueItem,
-): Promise<CatalogueItem[]> {
-  for (const relation of ["recommendations", "similar"]) {
-    const data = await tmdbFetch<TmdbPaginatedResponse<T>>(`${basePath}/${relation}`, {
-      language: LANGUAGE,
-    });
-    if (data.results.length > 0) return data.results.map(normalize);
-  }
-  return [];
+type EchoMetadata = {
+  title?: string;
+  name?: string;
+  overview?: string;
+  genres?: { id: number; name: string }[];
+  belongs_to_collection?: { id: number } | null;
+  keywords?: { keywords?: { name: string }[]; results?: { name: string }[] };
+};
+
+type EchoLookupState = {
+  metadata: Map<string, Promise<EchoCandidate>>;
+  collections: Map<number, Promise<Set<number>>>;
+  remaining: number;
+};
+
+/** Append keywords to a bounded set of detail lookups; reuse selected titles next step. */
+function getEchoMetadata(title: EchoCandidate, state: EchoLookupState): Promise<EchoCandidate> {
+  const key = itemKey(title);
+  const cached = state.metadata.get(key);
+  if (cached) return cached;
+  const load = async (): Promise<EchoCandidate> => {
+    let details: EchoMetadata;
+    try {
+      details = await tmdbFetch<EchoMetadata>(`/${title.mediaType}/${title.tmdbId}`, {
+        language: LANGUAGE, append_to_response: "keywords",
+      });
+    } catch (error) {
+      console.error("Failed to load Echo similarity metadata:", error instanceof Error ? error.message : error);
+      // No relaxation of the relevance gate when optional metadata is unavailable.
+      return title;
+    }
+    // Lists already batch these lookups. Respect description/genre edits in matching too.
+    const overrides = (await getTitleRule(title))?.overrides ?? {};
+    return {
+      ...title,
+      franchiseTitle: details.title ?? details.name ?? title.franchiseTitle,
+      overview: typeof overrides.overview === "string" ? overrides.overview : details.overview ?? title.overview,
+      genreIds: details.genres?.map(({ id }) => id) ?? title.genreIds,
+      genreNames: Array.isArray(overrides.genres) ? overrides.genres : details.genres?.map(({ name }) => name),
+      collectionId: details.belongs_to_collection?.id ?? null,
+      keywords: (details.keywords?.keywords ?? details.keywords?.results ?? []).map(({ name }) => name),
+    };
+  };
+  const promise = load();
+  state.metadata.set(key, promise);
+  return promise;
 }
 
-function getRelatedTitles(title: MediaReference): Promise<CatalogueItem[]> {
+async function getEchoCollection(current: EchoCandidate, state: EchoLookupState): Promise<Set<number>> {
+  if (current.mediaType !== "movie" || !current.collectionId) return new Set();
+  const id = current.collectionId;
+  let pending = state.collections.get(id);
+  if (!pending) {
+    pending = tmdbFetch<{ parts: { id: number }[] }>(`/collection/${id}`, { language: LANGUAGE })
+      .then(({ parts }) => new Set(parts.map(({ id }) => id)))
+      .catch((error: unknown) => {
+        console.error("Failed to load Echo collection:", error instanceof Error ? error.message : error);
+        return new Set<number>();
+      });
+    state.collections.set(id, pending);
+  }
+  return pending;
+}
+
+/** Both sources must pass exactly the same visibility, poster and relevance gates. */
+async function getRelatedOf<T extends { genre_ids?: number[]; overview?: string; title?: string; name?: string }>(
+  basePath: string,
+  normalize: (result: T) => CatalogueItem,
+  current: EchoCandidate,
+  collectionMembers: Set<number>,
+  seen: Set<string>,
+  state: EchoLookupState,
+  seed: string,
+): Promise<EchoCandidate | undefined> {
+  for (const relation of ["recommendations", "similar"]) {
+    let results: T[];
+    try {
+      const data = await tmdbFetch<TmdbPaginatedResponse<T>>(`${basePath}/${relation}`, {
+        language: LANGUAGE,
+      });
+      results = data.results;
+    } catch (error) {
+      console.error(`Failed to load Echo ${relation}:`, error instanceof Error ? error.message : error);
+      continue;
+    }
+
+    // One batched lookup per source, reusing the content rules' per-request cache.
+    // Let visibility-check errors propagate: unchecked content must never be selected.
+    const visible = await applyTitleRules(results.map((result) => ({
+      ...normalize(result), genreIds: result.genre_ids ?? [],
+      overview: result.overview, franchiseTitle: result.title ?? result.name,
+    })));
+    const unique = new Set(seen);
+    const eligible = visible.filter((item) => {
+      const key = itemKey(item);
+      if (!hasEchoPoster(item) || unique.has(key)) return false;
+      unique.add(key);
+      return true;
+    });
+    // Confirmed collection members need no speculative candidate-detail requests.
+    const collectionMatch = selectEchoCandidate(current, eligible, collectionMembers, seed);
+    if (collectionMatch) return collectionMatch;
+
+    const shortlist = eligible.map((item, rank) => ({ item, rank, score: echoShortlistScore(current, item) }))
+      .sort((a, b) => b.score - a.score || a.rank - b.rank).slice(0, ECHO_SHORTLIST_SIZE);
+    const enriched: EchoCandidate[] = [];
+    // Reserve a per-chain budget before launching the independent shortlist lookups.
+    const lookups = shortlist.map(({ item, rank }) => {
+      if (!state.metadata.has(itemKey(item))) {
+        if (state.remaining === 0) return null;
+        state.remaining--;
+      }
+      return { rank, pending: getEchoMetadata(item, state) };
+    }).filter((lookup) => lookup !== null);
+    const loaded = await Promise.all(lookups.map(async ({ rank, pending }) => ({ rank, item: await pending })));
+    // Restore TMDB order: shortlist ordering only decides which metadata to fetch.
+    loaded.sort((a, b) => a.rank - b.rank).forEach(({ item }) => enriched.push(item));
+    const next = selectEchoCandidate(current, enriched, collectionMembers, seed);
+    if (next) return next;
+  }
+  return undefined;
+}
+
+function getRelatedTitles(
+  title: EchoCandidate, collectionMembers: Set<number>, seen: Set<string>, state: EchoLookupState, seed: string,
+): Promise<EchoCandidate | undefined> {
   return title.mediaType === "movie"
-    ? getRelatedOf(`/movie/${title.tmdbId}`, normalizeMovie)
-    : getRelatedOf(`/tv/${title.tmdbId}`, normalizeTvShow);
+    ? getRelatedOf(`/movie/${title.tmdbId}`, normalizeMovie, title, collectionMembers, seen, state, seed)
+    : getRelatedOf(`/tv/${title.tmdbId}`, normalizeTvShow, title, collectionMembers, seen, state, seed);
 }
 
 /**
- * An Echo Trail: starting from one title, each step is the first not-yet-seen title in the
- * previous step's TMDB recommendations. Built purely from content relationships.
+ * Each step scores the previous title's eligible recommendations (or similar titles).
+ * Seeded variety only breaks ties in the strongest similarity tier. Admin visibility and
+ * overrides are checked before following a title.
  *
  * Returns the titles after the start, which may be fewer than requested (or empty) when TMDB
  * has nothing more to offer or a request fails part-way.
  */
-export async function getEchoTrail(start: CatalogueItem): Promise<CatalogueItem[]> {
+export async function getEchoTrail(start: CatalogueItem, seed = "0"): Promise<CatalogueItem[]> {
   const trail: CatalogueItem[] = [];
   if (!isTmdbConfigured()) return trail;
 
   const seen = new Set([itemKey(start)]);
-  let current: CatalogueItem = start;
+  const state: EchoLookupState = { metadata: new Map(), collections: new Map(), remaining: ECHO_METADATA_BUDGET };
+  let current: EchoCandidate = start;
   try {
     while (trail.length < ECHO_TRAIL_LENGTH - 1) {
-      const related = await getRelatedTitles(current);
-      const next = related.find((item) => item.posterPath && !seen.has(itemKey(item)));
+      current = await getEchoMetadata(current, state);
+      const collectionMembers = await getEchoCollection(current, state);
+      const next = await getRelatedTitles(
+        current, collectionMembers, seen, state,
+        `${seed}:${trail.length}:${itemKey(current)}`,
+      );
       if (!next) break;
       seen.add(itemKey(next));
       trail.push(next);
@@ -527,11 +647,7 @@ export async function getEchoTrail(start: CatalogueItem): Promise<CatalogueItem[
   } catch (error) {
     console.error("Failed to build Echo Trail:", error instanceof Error ? error.message : error);
   }
-  try {
-    return await applyTitleRules(trail);
-  } catch {
-    return [];
-  }
+  return trail;
 }
 
 /** Specific titles by TMDB ID, in the order given. */

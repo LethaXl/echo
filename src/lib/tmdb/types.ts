@@ -11,6 +11,7 @@ export type TmdbMovieResult = {
   id: number;
   title: string;
   original_title?: string;
+  overview?: string;
   release_date?: string;
   poster_path: string | null;
   vote_average?: number;
@@ -24,6 +25,7 @@ export type TmdbTvResult = {
   id: number;
   name: string;
   original_name?: string;
+  overview?: string;
   first_air_date?: string;
   poster_path: string | null;
   vote_average?: number;
