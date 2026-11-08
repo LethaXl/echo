@@ -97,8 +97,8 @@ export default function SeasonManager({ showId, showHidden, seasons }: SeasonMan
   const items = seasons.map((season) => summaries[season.seasonNumber] ?? season);
 
   return (
-    <section aria-labelledby="seasons-heading" className="mt-12">
-      <div className="mb-3 flex items-baseline justify-between gap-3">
+    <section aria-labelledby="seasons-heading" className="mt-12 max-md:mt-6">
+      <div className="mb-3 flex items-baseline justify-between gap-3 max-md:flex-wrap max-md:gap-y-1">
         <h2 id="seasons-heading" className="text-lg font-semibold tracking-tight">
           Seasons and episodes
         </h2>
@@ -157,20 +157,20 @@ function SeasonRow({ showId, season, showHidden, open, episodes, error, loading,
   return (
     <li aria-busy={loading || undefined}>
       <div
-        className={`flex items-center gap-3 px-4 py-3 transition-colors duration-150 ${open ? "bg-elevated/50" : "hover:bg-elevated/30"}`}
+        className={`flex items-center gap-3 px-4 py-3 transition-colors duration-150 max-md:grid max-md:grid-cols-[minmax(0,1fr)_auto] ${open ? "bg-elevated/50" : "hover:bg-elevated/30"}`}
       >
         <button
           type="button"
           onClick={onToggle}
           aria-expanded={open}
           aria-controls={panelId}
-          className="flex min-w-0 flex-1 items-center gap-3 rounded-md text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"
+          className="flex min-w-0 flex-1 items-center gap-3 rounded-md text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent max-md:min-h-11 max-md:gap-2"
         >
           <ChevronDownIcon
             className={`size-4 shrink-0 text-muted transition-transform duration-150 ${open ? "" : "-rotate-90"}`}
           />
           <span className="min-w-0">
-            <span className="block truncate text-sm font-medium">{name}</span>
+            <span className="block truncate text-sm font-medium max-md:line-clamp-2 max-md:whitespace-normal max-md:break-words">{name}</span>
             <Meta>
               {[
                 <span key="count">{formatEpisodeCount(season.episodeCount)}</span>,
@@ -245,7 +245,7 @@ function EpisodeList({
   if (!episodes) {
     if (error) {
       return (
-        <div role="alert" className="flex items-center justify-between gap-3 px-4 py-4 pl-11 text-sm text-danger">
+        <div role="alert" className="flex items-center justify-between gap-3 px-4 py-4 pl-11 text-sm text-danger max-md:flex-wrap max-md:pl-4">
           <span>{error}</span>
           <button type="button" onClick={onChanged} className={SMALL_BUTTON}>
             Retry
@@ -254,11 +254,11 @@ function EpisodeList({
       );
     }
     return (
-      <div role="status" aria-label="Loading episodes" className="flex flex-col gap-3 px-4 py-4 pl-11">
+      <div role="status" aria-label="Loading episodes" className="flex flex-col gap-3 px-4 py-4 pl-11 max-md:pl-4">
         {[0, 1, 2].map((index) => (
           <div key={index} className="flex items-center gap-3">
             <div className="h-3 w-6 animate-pulse rounded bg-elevated" />
-            <div className="h-3 w-48 animate-pulse rounded bg-elevated" />
+            <div className="h-3 w-48 animate-pulse rounded bg-elevated max-md:min-w-0 max-md:flex-1" />
           </div>
         ))}
       </div>
@@ -325,10 +325,10 @@ function EpisodeRow({
         : "";
 
   return (
-    <li className="flex items-center gap-3 py-2.5 pr-4 pl-11 transition-colors duration-150 hover:bg-elevated/25">
+    <li className="flex items-center gap-3 py-2.5 pr-4 pl-11 transition-colors duration-150 hover:bg-elevated/25 max-md:grid max-md:grid-cols-[2rem_minmax(0,1fr)] max-md:items-start max-md:gap-y-2 max-md:pl-4">
       <span className="w-8 shrink-0 text-xs font-medium text-muted tabular-nums">E{episodeNumber}</span>
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm">{name}</p>
+        <p className="truncate text-sm max-md:line-clamp-2 max-md:whitespace-normal max-md:break-words">{name}</p>
         <Meta>
           {[
             episode.airDate && <span key="date">{formatCalendarDate(episode.airDate)}</span>,
@@ -342,7 +342,7 @@ function EpisodeRow({
           ]}
         </Meta>
       </div>
-      <div className="flex shrink-0 items-center gap-2">
+      <div className="flex shrink-0 items-center gap-2 max-md:col-start-2 max-md:flex-wrap">
         {episode.fields && (
           <EditContentButton
             disabled={busy}

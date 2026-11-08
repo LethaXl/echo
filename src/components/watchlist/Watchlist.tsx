@@ -6,6 +6,7 @@ import { ArrowUpDownIcon, FilmIcon } from "@/components/icons";
 import { ContentTypeToggle, FilterMenu, MenuOption } from "@/components/media/BrowseFilterBar";
 import { RESULTS_GRID_CLASS_NAME } from "@/components/media/BrowseResultsSkeleton";
 import MediaCard from "@/components/media/MediaCard";
+import MobileCollectionFilters from "@/components/media/MobileCollectionFilters";
 import MediaSearchField from "@/components/media/MediaSearchField";
 import WatchlistButton from "./WatchlistButton";
 import type { ContentType } from "@/lib/browse";
@@ -36,9 +37,9 @@ export default function Watchlist({ items }: { items: WatchlistItem[] }) {
           </p>
         </div>
         {items.length > 0 && (
-          <div className="flex flex-wrap items-center gap-2.5">
-            <ContentTypeToggle value={type} onChange={setType} />
-            <div role="search" aria-label="Watchlist" className="w-60 max-w-full">
+          <div className="flex flex-wrap items-center gap-2.5 max-md:relative max-md:[&_input]:pr-28 max-md:[&_input:placeholder-shown]:pr-14 max-md:[&_button[aria-label^=Clear]]:right-14 max-md:grid max-md:w-full max-md:grid-cols-[minmax(0,1fr)_auto] max-md:gap-2">
+            <ContentTypeToggle value={type} onChange={setType} className="max-md:hidden" />
+            <div role="search" aria-label="Watchlist" className="w-60 max-w-full max-md:col-span-2 max-md:order-first max-md:min-w-0 max-md:w-full">
               <MediaSearchField
                 inputRef={search}
                 label="Search my watchlist"
@@ -50,7 +51,7 @@ export default function Watchlist({ items }: { items: WatchlistItem[] }) {
             </div>
             <FilterMenu
               icon={<ArrowUpDownIcon className="size-3.5" />}
-              label="Sort"
+              label="Sort" className="max-md:hidden" triggerClassName="max-md:[&>span:last-of-type]:hidden"
               value={WATCHLIST_SORTS[sort]}
               active
               align="right"
@@ -62,6 +63,8 @@ export default function Watchlist({ items }: { items: WatchlistItem[] }) {
                 </MenuOption>
               ))}
             </FilterMenu>
+            <MobileCollectionFilters title="Refine your watchlist" type={type} sort={sort} defaultSort="recent" sorts={WATCHLIST_SORTS}
+              onApply={(next) => { setType(next.type); setSort(next.sort); }} />
           </div>
         )}
       </div>
@@ -88,7 +91,7 @@ export default function Watchlist({ items }: { items: WatchlistItem[] }) {
         <ul className={RESULTS_GRID_CLASS_NAME}>
           {shown.map((item) => (
             <li key={item.entryId} className="relative min-w-0">
-              <MediaCard item={item} titleAction={
+              <MediaCard item={item} showMobileTmdbRating={false} titleAction={
                 <WatchlistButton item={item} saved compact />
               } />
               {item.unavailable && (

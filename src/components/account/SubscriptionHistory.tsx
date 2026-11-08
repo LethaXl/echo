@@ -71,7 +71,7 @@ export default function SubscriptionHistory({ history }: { history: Subscription
             {history.events.map((event) => {
               const { title, detail } = describe(event);
               return (
-                <li key={event.id} className="flex items-center gap-4 px-5 py-3 text-sm">
+                <li key={event.id} className="flex items-center gap-4 px-5 py-3 text-sm max-md:items-start max-md:gap-3 max-md:px-4 max-md:[overflow-wrap:anywhere]">
                   <div className="min-w-0 flex-1">
                     <p className="font-medium text-foreground">{title}</p>
                     <p className="mt-0.5 text-xs text-muted">

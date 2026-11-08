@@ -217,7 +217,7 @@ export default function SubscriptionChangeDialog({
   const [state, formAction, pending] = useActionState(copy.action, initialFormState);
 
   return (
-    <Dialog labelledBy={titleId} busy={pending} onClose={onClose}>
+    <Dialog labelledBy={titleId} busy={pending} onClose={onClose} mobileOptimized>
       {state.status === "success" ? (
         <div role="status">
           <DialogHeader titleId={titleId} title={copy.successTitle}>
@@ -243,7 +243,7 @@ export default function SubscriptionChangeDialog({
             )}
             {state.status === "error" && <FormMessage state={state} />}
 
-            <div className="mt-1 grid grid-cols-2 gap-3">
+            <div className="mt-1 grid grid-cols-2 gap-3 max-md:grid-cols-1 max-md:[&>button]:min-h-11">
               <DialogCloseButton
                 disabled={pending}
                 data-autofocus

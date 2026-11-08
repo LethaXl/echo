@@ -11,7 +11,7 @@ import { AdminIcon, UserAvatar } from "./UserIdentity";
 
 /** Columns shared by the header and every row; smaller screens drop Subscription, then Joined. */
 const GRID =
-  "grid grid-cols-[minmax(0,1fr)_6.5rem_1rem] items-center gap-4 sm:grid-cols-[minmax(0,1fr)_8.5rem_6.5rem_1rem] md:grid-cols-[minmax(0,1fr)_8.5rem_6.5rem_9.5rem_1rem]";
+  "grid grid-cols-[minmax(0,1fr)_6.5rem_1rem] items-center gap-4 sm:grid-cols-[minmax(0,1fr)_8.5rem_6.5rem_1rem] md:grid-cols-[minmax(0,1fr)_8.5rem_6.5rem_9.5rem_1rem] max-md:grid-cols-[minmax(0,1fr)_1rem] max-md:gap-x-2 max-md:gap-y-1";
 
 function UserRow({ user }: { user: AdminUser }) {
   const open = use(OpenAccountContext);
@@ -26,18 +26,18 @@ function UserRow({ user }: { user: AdminUser }) {
         onClick={() => open({ id: user.id, name })}
         className={`${GRID} group w-full px-4 py-2.5 text-left transition-colors duration-150 hover:bg-elevated/60 focus-visible:bg-elevated/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60 focus-visible:ring-inset`}
       >
-        <span className="flex min-w-0 items-center gap-3">
+        <span className="flex min-w-0 items-center gap-3 max-md:items-start">
           <UserAvatar id={user.id} name={user.name} email={user.email} />
           <span className="min-w-0">
             <span className="flex items-center gap-1.5">
-              <span className={`truncate text-sm font-medium ${named ? "" : "text-muted"}`}>{name}</span>
+              <span className={`truncate text-sm font-medium max-md:line-clamp-2 max-md:whitespace-normal max-md:[overflow-wrap:anywhere] ${named ? "" : "text-muted"}`}>{name}</span>
               {user.isAdmin && <AdminIcon />}
             </span>
-            <span className="block truncate text-xs text-muted">{user.email}</span>
+            <span className="block truncate text-xs text-muted max-md:whitespace-normal max-md:[overflow-wrap:anywhere]">{user.email}</span>
           </span>
         </span>
-        <span className="hidden truncate text-sm sm:block">{planLabel(user.plan)}</span>
-        <span>
+        <span className="hidden truncate text-sm sm:block max-md:hidden">{planLabel(user.plan)}</span>
+        <span className="max-md:col-start-1 max-md:row-start-2 max-md:pl-11">
           {user.deactivated ? (
             <StatusLabel tone="danger">Deactivated</StatusLabel>
           ) : (
@@ -45,7 +45,7 @@ function UserRow({ user }: { user: AdminUser }) {
           )}
         </span>
         <span className="hidden text-sm whitespace-nowrap text-muted md:block">{formatDate(user.joinedAt)}</span>
-        <ChevronRightIcon className="size-4 text-muted/50 transition-colors duration-150 group-hover:text-foreground group-focus-visible:text-foreground" />
+        <ChevronRightIcon className="size-4 text-muted/50 transition-colors duration-150 group-hover:text-foreground group-focus-visible:text-foreground max-md:col-start-2 max-md:row-span-2 max-md:row-start-1" />
       </button>
     </li>
   );
@@ -55,7 +55,7 @@ function UserRow({ user }: { user: AdminUser }) {
 export default function UserList({ users }: { users: AdminUser[] }) {
   return (
     <div className={`${PANEL} overflow-hidden`}>
-      <div aria-hidden="true" className={`${GRID} border-b border-line px-4 py-2.5 text-xs font-medium text-muted`}>
+      <div aria-hidden="true" className={`${GRID} border-b border-line px-4 py-2.5 text-xs font-medium text-muted max-md:hidden`}>
         <span>User</span>
         <span className="hidden sm:block">Subscription</span>
         <span>Status</span>

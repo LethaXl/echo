@@ -11,7 +11,7 @@ export default function SeasonGrid({ show }: { show: TvShowDetails }) {
     <section aria-labelledby="seasons-heading">
       <h2
         id="seasons-heading"
-        className="mb-5 flex items-baseline gap-2 text-xl font-semibold tracking-tight"
+        className="mb-5 max-md:mb-3 flex items-baseline gap-2 text-xl font-semibold tracking-tight"
       >
         Seasons
         {show.seasons.length > 0 && (
@@ -20,9 +20,9 @@ export default function SeasonGrid({ show }: { show: TvShowDetails }) {
       </h2>
 
       {show.seasons.length > 0 ? (
-        <ul className="grid grid-cols-[repeat(auto-fill,9.5rem)] gap-x-6 gap-y-8">
+        <ul className="grid grid-cols-[repeat(auto-fill,9.5rem)] gap-x-6 gap-y-8 max-md:grid-cols-2 max-md:gap-x-3 max-md:gap-y-5">
           {show.seasons.map((season) => (
-            <li key={season.seasonNumber}>
+            <li key={season.seasonNumber} className="max-md:min-w-0">
               <Link
                 href={seasonHref(show.tmdbId, season.seasonNumber)}
                 className="group block rounded-md"
@@ -30,11 +30,11 @@ export default function SeasonGrid({ show }: { show: TvShowDetails }) {
                 <TmdbImage
                   path={season.posterPath ?? show.posterPath}
                   size="w342"
-                  sizes="9.5rem"
+                  sizes="(max-width: 767px) calc((100vw - 44px) / 2), 9.5rem"
                   className="aspect-[2/3] ring-1 ring-line transition duration-200 ease-out group-hover:scale-[1.02] group-hover:brightness-110"
                   fallback={<FilmIcon className="size-6" />}
                 />
-                <h3 className="mt-3 truncate text-sm font-semibold transition-colors duration-150 group-hover:text-accent">
+                <h3 className="mt-3 max-md:mt-2 truncate text-sm font-semibold transition-colors duration-150 group-hover:text-accent">
                   {season.name}
                 </h3>
                 <p className="mt-1 text-xs text-muted">{formatEpisodeCount(season.episodeCount)}</p>

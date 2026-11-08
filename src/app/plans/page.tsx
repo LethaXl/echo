@@ -46,6 +46,7 @@ export default async function PlansPage({ searchParams }: PageProps<"/plans">) {
 
       <div className="mx-auto mt-5 grid max-w-4xl gap-5 md:grid-cols-2">
         <PlanCard
+          compactMobile
           name={<span className="sr-only">{FREE_PLAN_NAME}</span>}
           price={<PlanPrice amount="Free" />}
           description={freePlan?.description ?? "Browse, search and explore movies and shows."}

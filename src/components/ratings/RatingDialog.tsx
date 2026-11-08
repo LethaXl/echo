@@ -31,7 +31,7 @@ export default function RatingDialog({ item, rating, compact = false }: {
     <>
       <button ref={trigger} type="button" onClick={() => setOpen(true)} aria-haspopup="dialog" aria-expanded={open}
         aria-label={`Rate ${item.title}${rating === null ? "" : `, currently ${rating} out of 5`}`}
-        className={compact ? "flex h-9 items-center justify-center gap-1.5 rounded-md px-1.5 text-accent transition-colors hover:bg-elevated hover:text-accent-hover" : buttonClassName("secondary", "lg")}>
+        className={compact ? "flex h-9 max-md:h-11 max-md:min-w-11 items-center justify-center gap-1.5 rounded-md px-1.5 text-accent transition-colors hover:bg-elevated hover:text-accent-hover" : buttonClassName("secondary", "lg")}>
         {compact && rating !== null ? <>
           <EchoWaveSymbol level={rating} className="h-6 w-5" />
           <span className="text-sm leading-none font-semibold tabular-nums">{rating}</span>

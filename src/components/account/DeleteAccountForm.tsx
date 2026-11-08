@@ -15,7 +15,7 @@ export default function DeleteAccountForm() {
   const confirmError = errorFor("confirm");
 
   return (
-    <div className="rounded-md border border-line bg-surface p-5">
+    <div className="rounded-md border border-line bg-surface p-5 max-md:p-4">
       {toast}
       <h2 className="text-base font-semibold">Delete account</h2>
       <p className="mt-1.5 text-sm leading-relaxed text-muted">
@@ -31,7 +31,7 @@ export default function DeleteAccountForm() {
           error={errorFor("password")}
         />
         <div className="relative">
-          <label className="flex items-center gap-2.5 text-sm text-muted">
+          <label className="flex items-center gap-2.5 text-sm text-muted max-md:min-h-11">
             <input
               type="checkbox"
               name="confirm"

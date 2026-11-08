@@ -16,7 +16,7 @@ export default function ChangePasswordForm() {
   });
 
   return (
-    <div className="rounded-md border border-line bg-surface p-5">
+    <div className="rounded-md border border-line bg-surface p-5 max-md:p-4">
       {toast}
       <form action={formAction} {...formProps} className="flex flex-col gap-3">
         <PasswordField

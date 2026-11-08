@@ -13,23 +13,23 @@ export default function ContentRow({ title }: { title: AdminTitle }) {
   const hidden = title.status === "hidden";
   const href = adminContentHref(title);
   return (
-    <li className="relative flex items-center gap-4 px-4 py-3 transition-colors duration-150 hover:bg-elevated/40">
+    <li className="relative flex items-center gap-4 px-4 py-3 transition-colors duration-150 hover:bg-elevated/40 max-md:grid max-md:grid-cols-[2.5rem_minmax(0,1fr)] max-md:gap-x-3 max-md:gap-y-2">
       <TmdbImage
         path={title.posterPath}
         size="w185"
         sizes="2.5rem"
-        className="aspect-[2/3] w-10 shrink-0"
+        className="aspect-[2/3] w-10 shrink-0 max-md:row-span-2 max-md:self-start"
         fallback={<FilmIcon className="size-4" />}
       />
       <div className="min-w-0 flex-1">
         {/* The whole row opens the title; the buttons sit above this link. */}
         <Link
           href={href}
-          className="block truncate text-sm font-medium after:absolute after:inset-0 focus-visible:outline-none focus-visible:after:rounded-md focus-visible:after:ring-2 focus-visible:after:ring-accent/70"
+          className="block truncate text-sm font-medium after:absolute after:inset-0 focus-visible:outline-none focus-visible:after:rounded-md focus-visible:after:ring-2 focus-visible:after:ring-accent/70 max-md:line-clamp-2 max-md:whitespace-normal max-md:break-words"
         >
           {title.title}
         </Link>
-        <p className="mt-1 flex items-center gap-2 text-xs text-muted">
+        <p className="mt-1 flex items-center gap-2 text-xs text-muted max-md:flex-wrap max-md:gap-y-1">
           {title.year && <span>{title.year}</span>}
           {title.year && <span aria-hidden="true">·</span>}
           <span>{title.mediaType === "movie" ? "Movie" : "TV Show"}</span>
@@ -37,7 +37,7 @@ export default function ContentRow({ title }: { title: AdminTitle }) {
           <ContentStatusLabel status={title.status} />
         </p>
       </div>
-      <div className="relative flex shrink-0 items-center gap-2">
+      <div className="relative flex shrink-0 items-center gap-2 max-md:col-start-2 max-md:flex-wrap">
         <ConfirmActionButton
           label={hidden ? "Restore" : "Hide"}
           className="w-[4.5rem]"

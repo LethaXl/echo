@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useId, useState, type FormEvent } from "react";
+import { useActionState, useId, useState, useSyncExternalStore, type ChangeEvent, type FormEvent } from "react";
 import { buttonClassName } from "@/components/ButtonLink";
 import Dialog, { DialogCloseButton, DialogHeader, useDialogClose } from "@/components/Dialog";
 import FormMessage from "@/components/forms/FormMessage";
@@ -20,7 +20,16 @@ import {
 import { BILLING_PERIODS, type PlanSettings } from "@/lib/subscriptions/plans";
 
 const ROW_BUTTON =
-  "inline-flex size-10 shrink-0 items-center justify-center rounded-md border border-line text-muted transition-colors duration-150 hover:bg-elevated hover:text-foreground disabled:pointer-events-none disabled:opacity-40";
+  "inline-flex size-10 shrink-0 items-center justify-center rounded-md border border-line text-muted transition-colors duration-150 hover:bg-elevated hover:text-foreground disabled:pointer-events-none disabled:opacity-40 max-md:size-11";
+
+const mobileQuery = "(width < 768px)";
+function subscribeToMobile(onChange: () => void) {
+  const query = window.matchMedia(mobileQuery);
+  query.addEventListener("change", onChange);
+  return () => query.removeEventListener("change", onChange);
+}
+const isMobile = () => window.matchMedia(mobileQuery).matches;
+const serverIsMobile = () => false;
 
 type Benefit = { id: number; text: string };
 
@@ -31,6 +40,7 @@ type EditPlanDialogProps = {
 
 // US-59 Edit Plan Benefits, US-60 Edit Plan Prices
 export default function EditPlanDialog({ plan, onClose }: EditPlanDialogProps) {
+  const mobile = useSyncExternalStore(subscribeToMobile, isMobile, serverIsMobile);
   const titleId = useId();
   const priceId = useId();
   const [state, formAction, pending] = useActionState(updatePlanSettings, initialFormState);
@@ -96,7 +106,7 @@ export default function EditPlanDialog({ plan, onClose }: EditPlanDialogProps) {
   }
 
   return (
-    <Dialog labelledBy={titleId} busy={pending} canClose={canClose} onClose={onClose}>
+    <Dialog labelledBy={titleId} busy={pending} canClose={canClose} onClose={onClose} mobileOptimized>
       {state.status === "success" ? (
         <div role="status">
           <DialogHeader titleId={titleId} title="Changes saved">
@@ -118,7 +128,7 @@ export default function EditPlanDialog({ plan, onClose }: EditPlanDialogProps) {
             action={formAction}
             onSubmit={handleSubmit}
             noValidate
-            className="mt-6 flex flex-col gap-5"
+            className="mt-6 flex flex-col gap-5 max-md:mt-4 max-md:gap-4"
           >
             <input type="hidden" name="planId" value={plan.id} />
 
@@ -160,54 +170,64 @@ export default function EditPlanDialog({ plan, onClose }: EditPlanDialogProps) {
               </div>
             )}
 
-            <fieldset className="flex flex-col gap-2">
+            <fieldset className="flex flex-col gap-2 max-md:min-w-0">
               <legend className={`${labelClassName} mb-1.5`}>Benefits</legend>
               <ol className="flex flex-col gap-2">
                 {benefits.map((benefit, index) => {
                   const error = attempted ? rowErrors[index] : null;
                   const errorId = `${titleId}-benefit-${benefit.id}-error`;
+                  const fieldProps = {
+                    name: "benefit",
+                    value: benefit.text,
+                    onChange: (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => updateBenefit(benefit.id, event.target.value),
+                    maxLength: MAX_BENEFIT_LENGTH,
+                    autoFocus: benefit.id === focusId,
+                    autoComplete: "off",
+                    "aria-label": `Benefit ${index + 1}`,
+                    "aria-invalid": error ? true : undefined,
+                    "aria-describedby": error ? errorId : undefined,
+                  };
                   return (
                     <li key={benefit.id} className="flex flex-col gap-1">
-                      <div className="flex items-center gap-1.5">
-                        <input
-                          name="benefit"
-                          value={benefit.text}
-                          onChange={(event) => updateBenefit(benefit.id, event.target.value)}
-                          maxLength={MAX_BENEFIT_LENGTH}
-                          autoFocus={benefit.id === focusId}
-                          autoComplete="off"
-                          aria-label={`Benefit ${index + 1}`}
-                          aria-invalid={error ? true : undefined}
-                          aria-describedby={error ? errorId : undefined}
-                          className={`${inputClassName} min-w-0 flex-1`}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => moveBenefit(index, -1)}
-                          disabled={index === 0}
-                          aria-label={`Move benefit ${index + 1} up`}
-                          className={ROW_BUTTON}
-                        >
-                          <ChevronDownIcon className="size-4 rotate-180" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => moveBenefit(index, 1)}
-                          disabled={index === benefits.length - 1}
-                          aria-label={`Move benefit ${index + 1} down`}
-                          className={ROW_BUTTON}
-                        >
-                          <ChevronDownIcon className="size-4" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => removeBenefit(benefit.id)}
-                          disabled={benefits.length === 1}
-                          aria-label={`Remove benefit ${index + 1}`}
-                          className={`${ROW_BUTTON} hover:text-danger`}
-                        >
-                          <XIcon className="size-4" />
-                        </button>
+                      <div className="flex items-center gap-1.5 max-md:flex-col max-md:items-stretch max-md:gap-2">
+                        {mobile ? (
+                          <textarea
+                            {...fieldProps}
+                            rows={3}
+                            className={`${inputClassName} min-w-0 max-md:h-auto max-md:min-h-22 max-md:max-h-48 max-md:resize-y max-md:py-2 max-md:leading-relaxed max-md:[field-sizing:content]`}
+                          />
+                        ) : (
+                          <input {...fieldProps} className={`${inputClassName} min-w-0 flex-1`} />
+                        )}
+                        <div className="contents max-md:flex max-md:justify-end max-md:gap-2">
+                          <button
+                            type="button"
+                            onClick={() => moveBenefit(index, -1)}
+                            disabled={index === 0}
+                            aria-label={`Move benefit ${index + 1} up`}
+                            className={ROW_BUTTON}
+                          >
+                            <ChevronDownIcon className="size-4 rotate-180" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => moveBenefit(index, 1)}
+                            disabled={index === benefits.length - 1}
+                            aria-label={`Move benefit ${index + 1} down`}
+                            className={ROW_BUTTON}
+                          >
+                            <ChevronDownIcon className="size-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => removeBenefit(benefit.id)}
+                            disabled={benefits.length === 1}
+                            aria-label={`Remove benefit ${index + 1}`}
+                            className={`${ROW_BUTTON} hover:text-danger`}
+                          >
+                            <XIcon className="size-4" />
+                          </button>
+                        </div>
                       </div>
                       {error && (
                         <p id={errorId} className="text-xs text-danger">
@@ -234,7 +254,7 @@ export default function EditPlanDialog({ plan, onClose }: EditPlanDialogProps) {
             {confirmingDiscard ? (
               <DiscardPrompt onKeepEditing={() => setConfirmingDiscard(false)} />
             ) : (
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-3 max-md:sticky max-md:bottom-0 max-md:z-10 max-md:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] max-md:gap-2 max-md:border-t max-md:border-line max-md:bg-surface max-md:py-3 max-md:pb-[max(0.75rem,env(safe-area-inset-bottom))]">
                 <DialogCloseButton
                   disabled={pending}
                   className={`${buttonClassName("secondary")} w-full`}
@@ -256,9 +276,9 @@ export default function EditPlanDialog({ plan, onClose }: EditPlanDialogProps) {
 function DiscardPrompt({ onKeepEditing }: { onKeepEditing: () => void }) {
   const close = useDialogClose();
   return (
-    <div role="alert" className="rounded-lg border border-line bg-background/60 p-4">
+    <div role="alert" className="rounded-lg border border-line bg-background/60 p-4 max-md:sticky max-md:bottom-0 max-md:z-10 max-md:bg-surface max-md:p-3">
       <p className="text-center text-sm">Discard your unsaved changes?</p>
-      <div className="mt-3 grid grid-cols-2 gap-3">
+      <div className="mt-3 grid grid-cols-2 gap-3 max-md:grid-cols-1">
         <button
           type="button"
           autoFocus

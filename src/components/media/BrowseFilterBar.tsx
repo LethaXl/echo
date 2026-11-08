@@ -1,14 +1,10 @@
 "use client";
 
-import { type ReactNode, useEffect, useId, useRef, useState } from "react";
+import type { ReactNode } from "react";
 import {
   ArrowUpDownIcon,
   CalendarIcon,
-  ChevronDownIcon,
-  ClapperboardIcon,
-  LayersIcon,
   TagIcon,
-  TvIcon,
   XIcon,
 } from "@/components/icons";
 import {
@@ -21,182 +17,12 @@ import {
   sortsFor,
 } from "@/lib/browse";
 
-const TYPES: { value: ContentType; label: string; Icon: typeof TvIcon }[] = [
-  { value: "all", label: "All", Icon: LayersIcon },
-  { value: "movie", label: "Movies", Icon: ClapperboardIcon },
-  { value: "tv", label: "TV shows", Icon: TvIcon },
-];
+import MobileBrowseFilters from "./MobileBrowseFilters";
+import { ContentTypeToggle } from "./ContentTypeToggle";
+import { FilterMenu, MenuOption } from "./EchoFilterMenu";
+export { ContentTypeToggle, FilterMenu, MenuOption };
 
 const YEARS = releaseYears();
-
-export function ContentTypeToggle({
-  value,
-  onChange,
-}: {
-  value: ContentType;
-  onChange: (type: ContentType) => void;
-}) {
-  const index = TYPES.findIndex((option) => option.value === value);
-
-  return (
-    <div
-      role="radiogroup"
-      aria-label="Content type"
-      className="relative grid h-9 grid-cols-3 rounded-full border border-accent/30 bg-accent/10 p-[3px]"
-    >
-      <span
-        aria-hidden="true"
-        className="absolute inset-y-[3px] left-[3px] w-[calc((100%-6px)/3)] rounded-full bg-accent shadow-[0_2px_10px_-2px] shadow-accent/50 transition-transform duration-300 ease-out"
-        style={{ transform: `translateX(${index * 100}%)` }}
-      />
-      {TYPES.map(({ value: option, label, Icon }) => {
-        const checked = option === value;
-        return (
-          <button
-            key={option}
-            type="button"
-            role="radio"
-            aria-checked={checked}
-            onClick={() => onChange(option)}
-            className={`relative z-10 flex w-[7rem] items-center justify-center gap-1.5 rounded-full text-[13px] font-semibold transition-colors duration-200 ${
-              checked ? "text-on-accent" : "text-muted hover:text-foreground"
-            }`}
-          >
-            <Icon className="size-3.5" />
-            {label}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
-export function FilterMenu({
-  icon,
-  label,
-  value,
-  active,
-  align = "left",
-  panelClassName = "",
-  size = "md",
-  disabled = false,
-  ariaLabel,
-  tone = "accent",
-  triggerClassName = "",
-  iconOnly = false,
-  children,
-}: {
-  icon: ReactNode;
-  label: string;
-  value: string;
-  active: boolean;
-  align?: "left" | "right";
-  panelClassName?: string;
-  size?: "md" | "lg";
-  disabled?: boolean;
-  ariaLabel?: string;
-  tone?: "accent" | "neutral";
-  triggerClassName?: string;
-  iconOnly?: boolean;
-  /** Picking any button inside the panel closes it. */
-  children: ReactNode;
-}) {
-  const [open, setOpen] = useState(false);
-  const panelId = useId();
-  const containerRef = useRef<HTMLDivElement>(null);
-  const triggerRef = useRef<HTMLButtonElement>(null);
-  const panelRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-
-    const selected =
-      panelRef.current?.querySelector<HTMLElement>('[aria-pressed="true"]') ??
-      panelRef.current?.querySelector<HTMLElement>("button");
-    selected?.focus({ preventScroll: true });
-    // Centres the current choice inside a scrolling list without scrolling the page.
-    const list = selected?.parentElement;
-    if (selected && list && list.scrollHeight > list.clientHeight) {
-      list.scrollTop = selected.offsetTop - (list.clientHeight - selected.offsetHeight) / 2;
-    }
-
-    function handlePointerDown(event: PointerEvent) {
-      if (!containerRef.current?.contains(event.target as Node)) setOpen(false);
-    }
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key !== "Escape") return;
-      setOpen(false);
-      triggerRef.current?.focus();
-    }
-
-    document.addEventListener("pointerdown", handlePointerDown);
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      document.removeEventListener("pointerdown", handlePointerDown);
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [open]);
-
-  return (
-    <div
-      ref={containerRef}
-      className="relative"
-      onBlur={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false);
-      }}
-    >
-      <button
-        ref={triggerRef}
-        type="button"
-        disabled={disabled}
-        aria-label={ariaLabel}
-        aria-expanded={open}
-        aria-controls={panelId}
-        title={iconOnly ? ariaLabel : undefined}
-        onClick={() => setOpen((current) => !current)}
-        className={iconOnly ? "flex size-7 items-center justify-center rounded-sm text-accent transition-colors hover:text-accent-hover disabled:pointer-events-none disabled:opacity-60" : `group flex items-center gap-1.5 border whitespace-nowrap transition-colors duration-150 disabled:pointer-events-none disabled:opacity-60 ${size === "lg" ? `h-11 rounded-md text-sm ${tone === "neutral" ? "px-3" : "px-4"}` : tone === "neutral" ? "h-8 rounded-md px-2.5 text-xs" : "h-9 rounded-full pr-3 pl-3.5 text-[13px]"} ${
-          tone === "neutral"
-            ? `${active ? "border-accent/40" : "border-line"} ${open ? "bg-elevated" : "bg-transparent"} hover:border-muted/60`
-            : active
-            ? "border-accent/60 bg-accent/10"
-            : open
-              ? "border-muted/40 bg-elevated"
-              : "border-line bg-surface hover:border-muted/40 hover:bg-elevated"
-        } ${triggerClassName}`}
-      >
-        {!iconOnly && icon && <span className={active ? "text-accent" : "text-muted group-hover:text-foreground"}>
-          {icon}
-        </span>}
-        {!iconOnly && label && <span className="text-muted">{label}</span>}
-        {!iconOnly && <span className="font-semibold text-foreground">{value}</span>}
-        <ChevronDownIcon
-          className={`${iconOnly ? "size-4" : "size-3.5"} transition-transform duration-200 motion-reduce:transition-none ${tone === "neutral" && !iconOnly ? "ml-1" : ""} ${open ? "rotate-180" : ""} ${
-            active ? "text-accent" : "text-muted"
-          }`}
-        />
-      </button>
-
-      {(open || iconOnly) && (
-        <div
-          ref={panelRef}
-          id={panelId}
-          inert={!open}
-          aria-hidden={!open}
-          className={`absolute top-full z-30 mt-1.5 rounded-xl border bg-elevated p-1.5 shadow-2xl shadow-black/60 ${iconOnly ? `origin-top-right transition-[opacity,transform] duration-150 ease-out motion-reduce:transition-none ${open ? "translate-y-0 scale-100 opacity-100" : "pointer-events-none -translate-y-1 scale-95 opacity-0"}` : "motion-safe:animate-menu-in"} ${tone === "neutral" ? "border-line" : "border-accent/35 ring-1 ring-accent/10"} ${
-            align === "right" ? "right-0" : "left-0"
-          } ${panelClassName}`}
-          onClick={(event) => {
-            if (!(event.target as HTMLElement).closest("button")) return;
-            setOpen(false);
-            triggerRef.current?.focus();
-          }}
-        >
-          {children}
-        </div>
-      )}
-    </div>
-  );
-}
 
 /** A scrolling list for menus with more options than fit comfortably. */
 function MenuList({ children }: { children: ReactNode }) {
@@ -204,33 +30,6 @@ function MenuList({ children }: { children: ReactNode }) {
     <div className="relative -mr-1 max-h-72 overflow-y-auto overscroll-contain pr-1 [scrollbar-color:color-mix(in_srgb,var(--color-accent)_45%,transparent)_transparent] [scrollbar-width:thin]">
       {children}
     </div>
-  );
-}
-
-export function MenuOption({
-  selected,
-  onSelect,
-  className = "",
-  children,
-}: {
-  selected: boolean;
-  onSelect: () => void;
-  className?: string;
-  children: ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      aria-pressed={selected}
-      onClick={onSelect}
-      className={`flex h-9 w-full items-center justify-center rounded-lg px-3 text-[13px] transition-colors duration-150 ${
-        selected
-          ? "bg-accent/20 font-semibold text-accent-hover ring-1 ring-accent/40 ring-inset"
-          : "font-medium text-foreground/85 hover:bg-accent/10 hover:text-foreground"
-      } ${className}`}
-    >
-      <span className="truncate">{children}</span>
-    </button>
   );
 }
 
@@ -272,6 +71,7 @@ export function BrowseSortMenu({
 
 type BrowseFilterBarProps = {
   filters: BrowseFilters;
+  searching?: boolean;
   /** Whether there's a search or any filter to clear. */
   canClear: boolean;
   onChange: (filters: BrowseFilters) => void;
@@ -284,6 +84,7 @@ type BrowseFilterBarProps = {
 export default function BrowseFilterBar({
   filters,
   canClear,
+  searching = false,
   onChange,
   onClearAll,
   search,
@@ -304,12 +105,13 @@ export default function BrowseFilterBar({
   }
 
   return (
-    <div className="mt-6 flex flex-wrap items-center gap-2.5">
-      <ContentTypeToggle value={filters.type} onChange={selectType} />
+    <div className="mt-6 flex flex-wrap items-center gap-2.5 max-md:relative max-md:[&_input]:pr-28 max-md:[&_input:placeholder-shown]:pr-14 max-md:[&_button[aria-label^=Clear]]:right-14 max-md:mt-5 max-md:grid max-md:grid-cols-[minmax(0,1fr)_auto] max-md:gap-2">
+      <ContentTypeToggle value={filters.type} onChange={selectType} className="max-md:hidden" />
 
       <FilterMenu
         icon={<TagIcon className="size-3.5" />}
         label="Genre"
+        className="max-md:hidden"
         value={genreLabel ?? "All"}
         active={filters.genre !== null}
         panelClassName="w-40"
@@ -333,6 +135,7 @@ export default function BrowseFilterBar({
       <FilterMenu
         icon={<CalendarIcon className="size-3.5" />}
         label="Year"
+        className="max-md:hidden"
         value={filters.year === null ? "Any" : String(filters.year)}
         active={filters.year !== null}
         panelClassName="w-28"
@@ -358,14 +161,15 @@ export default function BrowseFilterBar({
         <button
           type="button"
           onClick={onClearAll}
-          className="flex h-9 items-center gap-1.5 rounded-full px-3 text-[13px] font-medium text-muted transition-colors duration-150 hover:bg-danger/10 hover:text-danger"
+          className="max-md:hidden flex h-9 items-center gap-1.5 rounded-full px-3 text-[13px] font-medium text-muted transition-colors duration-150 hover:bg-danger/10 hover:text-danger"
         >
           <XIcon className="size-3.5" />
           Clear all
         </button>
       )}
 
-      <div className="ml-auto min-w-52 flex-1 basis-0 sm:max-w-sm">{search}</div>
+      <div className="ml-auto min-w-52 flex-1 basis-0 sm:max-w-sm max-md:col-span-2 max-md:order-first max-md:ml-0 max-md:w-full max-md:min-w-0 max-md:max-w-none max-md:basis-auto">{search}</div>
+      <MobileBrowseFilters filters={filters} searching={searching} onApply={onChange} />
     </div>
   );
 }

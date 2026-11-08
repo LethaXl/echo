@@ -58,13 +58,13 @@ function ResultsMessage({
   action?: ReactNode;
 }) {
   return (
-    <div className="flex items-center justify-between gap-8 rounded-md border border-line bg-surface px-6 py-5">
+    <div className="flex items-center justify-between gap-8 max-md:flex-col max-md:items-stretch max-md:gap-4 max-md:px-4 rounded-md border border-line bg-surface px-6 py-5">
       <div className="flex min-w-0 items-center gap-4">
         <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-elevated text-muted">
           {icon}
         </span>
         <div className="min-w-0">
-          <p className="truncate font-semibold text-foreground">{title}</p>
+          <p className="truncate font-semibold text-foreground max-md:whitespace-normal max-md:break-words">{title}</p>
           <p className="mt-0.5 text-sm text-muted">{text}</p>
         </div>
       </div>

@@ -47,7 +47,7 @@ export default function WatchlistButton({ item, saved, compact = false, onSucces
         aria-label={compact ? `Remove ${item.title ?? "title"} from watchlist` : "Add to Watchlist"}
         title={compact ? (pending ? "Removing…" : "Remove from watchlist") : undefined}
         className={compact
-          ? "flex size-7 items-center justify-center rounded-sm text-accent transition-colors hover:text-accent-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-wait disabled:opacity-60"
+          ? "flex size-7 max-md:size-11 items-center justify-center rounded-sm text-accent transition-colors hover:text-accent-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-wait disabled:opacity-60"
           : `${buttonClassName("secondary", "lg")} min-w-48`}>
         {compact ? (
           <>
@@ -58,7 +58,7 @@ export default function WatchlistButton({ item, saved, compact = false, onSucces
       </button>
       )}
       {feedback && <p role={feedback.ok ? "status" : "alert"}
-        className={`${!compact && feedback.ok ? "sr-only" : compact ? "absolute top-full right-0 z-20 mt-2 w-48 rounded-md border border-line bg-surface p-2 shadow-md" : "mt-2 max-w-xs"} text-xs ${feedback.ok ? "text-accent" : "text-danger"}`}>
+        className={`${!compact && feedback.ok ? "sr-only" : compact ? "absolute top-full right-0 z-20 mt-2 w-48 max-md:fixed max-md:top-auto max-md:right-4 max-md:bottom-4 max-md:left-4 max-md:w-auto rounded-md border border-line bg-surface p-2 shadow-md" : "mt-2 max-w-xs"} text-xs ${feedback.ok ? "text-accent" : "text-danger"}`}>
         {feedback.message}
       </p>}
     </div>

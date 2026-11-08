@@ -58,10 +58,10 @@ export default function ContentBrowser({ query, children }: { query: string; chi
 
   return (
     <>
-      <div className="mt-6 flex items-center gap-3">
+      <div className="mt-6 flex items-center gap-3 max-md:flex-col max-md:items-stretch max-md:[&_input]:text-base">
         <form
           role="search"
-          className="min-w-0 flex-1 sm:max-w-md"
+          className="min-w-0 flex-1 sm:max-w-md max-md:w-full max-md:max-w-none"
           onSubmit={(event) => {
             event.preventDefault();
             const nextQuery = searchable(value);

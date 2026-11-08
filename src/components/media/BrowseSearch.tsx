@@ -106,6 +106,7 @@ export default function BrowseSearch({ query, filters, header, children }: Brows
 
       <BrowseFilterBar
         filters={shownFilters}
+        searching={requestedQuery !== ""}
         canClear={value !== "" || showResults}
         onChange={changeFilters}
         onClearAll={clearAll}
@@ -130,10 +131,10 @@ export default function BrowseSearch({ query, filters, header, children }: Brows
         }
       />
 
-      <div className="relative mt-8">
+      <div className="relative mt-8 max-md:mt-6">
         {/* Sits on the results heading row; the regular Browse sections have nothing to sort. */}
         {showResults && (
-          <div className="absolute top-1.5 right-0 z-20">
+          <div className="absolute top-1.5 right-0 z-20 max-md:hidden">
             <BrowseSortMenu
               sort={shownFilters.sort}
               year={shownFilters.year}

@@ -87,30 +87,33 @@ export default async function AdminTitlePage({ params }: AdminTitlePageProps) {
   const refFields = { mediaType, tmdbId: String(tmdbId) };
 
   return (
-    <div data-layout="wide" className="motion-safe:animate-fade-in-up">
+    <div data-layout="wide" className="motion-safe:animate-fade-in-up max-md:[overflow-wrap:anywhere] max-md:[&>a:first-child]:min-h-11 max-md:[&>div>a:first-child]:min-h-11">
       <div className="mx-auto w-full max-w-4xl">
         {back}
 
-        <header className="mt-6 grid grid-cols-[5.5rem_minmax(0,1fr)] items-start gap-5 sm:grid-cols-[8rem_minmax(0,1fr)] sm:gap-7">
+        <header className="mt-6 grid grid-cols-[5.5rem_minmax(0,1fr)] items-start gap-5 sm:grid-cols-[8rem_minmax(0,1fr)] sm:gap-7 max-md:grid-cols-[4.5rem_minmax(0,1fr)] max-md:gap-4">
           <TmdbImage
             path={posterPath}
             size="w342"
             sizes="8rem"
-            className="aspect-[2/3] ring-1 ring-line"
+            className="aspect-[2/3] ring-1 ring-line max-md:col-start-1 max-md:row-start-1"
             fallback={<FilmIcon className="size-6" />}
           />
-          <div className="min-w-0">
+          <div className="min-w-0 max-md:contents">
+            <div className="contents max-md:col-start-2 max-md:row-start-1 max-md:block max-md:min-w-0">
             <p className="flex items-center gap-2 text-xs text-muted">
               <span>{mediaType === "movie" ? "Movie" : "TV show"}</span>
               {hidden && <span aria-hidden="true">·</span>}
               <ContentStatusLabel status={status} />
             </p>
-            <h1 className="mt-2 text-2xl font-semibold tracking-tight">{title}</h1>
+            <h1 className="mt-2 text-2xl font-semibold tracking-tight max-md:text-xl max-md:break-words">{title}</h1>
             <p className="mt-1 text-sm text-muted">
               {[year, shown?.genres.join(", ") || null, shown?.tmdbRating ? `TMDB ${shown.tmdbRating}` : null]
                 .filter(Boolean)
                 .join(" · ")}
             </p>
+            </div>
+            <div className="contents max-md:col-span-2 max-md:block max-md:min-w-0">
             {shown?.overview && (
               <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-foreground/85">{shown.overview}</p>
             )}
@@ -129,7 +132,7 @@ export default async function AdminTitlePage({ params }: AdminTitlePageProps) {
               )}
             </p>
 
-            <div className="mt-5 flex flex-wrap gap-2.5">
+            <div className="mt-5 flex flex-wrap gap-2.5 max-md:mt-4 max-md:grid max-md:grid-cols-2 max-md:[&>button]:h-auto max-md:[&>button]:min-h-11 max-md:[&>button]:min-w-0 max-md:[&>button]:py-2 max-md:[&>a]:col-span-2 max-md:[&>a]:min-h-11">
               {details && (
                 <EditContentButton
                   label="Edit details"
@@ -163,6 +166,7 @@ export default async function AdminTitlePage({ params }: AdminTitlePageProps) {
                   View on Echo
                 </ButtonLink>
               )}
+            </div>
             </div>
           </div>
         </header>

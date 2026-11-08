@@ -22,7 +22,7 @@ export default function PlanAvailabilityDialog({ plan, enable, onClose }: PlanAv
   const [state, formAction, pending] = useActionState(setPlanAvailability, initialFormState);
 
   return (
-    <Dialog labelledBy={titleId} busy={pending} onClose={onClose}>
+    <Dialog labelledBy={titleId} busy={pending} onClose={onClose} mobileOptimized>
       {state.status === "success" ? (
         <div role="status">
           <DialogHeader titleId={titleId} title={`${plan.name} ${enable ? "enabled" : "disabled"}`}>
@@ -47,7 +47,7 @@ export default function PlanAvailabilityDialog({ plan, enable, onClose }: PlanAv
             <input type="hidden" name="available" value={String(enable)} />
             {state.status === "error" && <FormMessage state={state} />}
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3 max-md:grid-cols-1">
               <DialogCloseButton
                 disabled={pending}
                 data-autofocus

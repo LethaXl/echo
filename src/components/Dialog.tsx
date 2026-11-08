@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import styles from "./Dialog.module.css";
 import {
   createContext,
   use,
@@ -26,6 +27,8 @@ type DialogProps = {
    * header and footer around a scrolling body; `panel` is wider.
    */
   size?: "md" | "panel" | "compact-panel";
+  /** Opt into viewport-aware mobile sizing without changing existing detail dialogs. */
+  mobileOptimized?: boolean;
   onClose: () => void;
   children: ReactNode;
 };
@@ -40,8 +43,36 @@ const SIZE_CLASS_NAMES = {
  * A modal that opens as soon as it mounts. Focus starts on the element marked `data-autofocus`,
  * or else the first input.
  */
-export default function Dialog({ labelledBy, busy, canClose, size = "md", onClose, children }: DialogProps) {
+export default function Dialog({ labelledBy, busy, canClose, size = "md", mobileOptimized = false, onClose, children }: DialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+
+  useEffect(() => {
+    if (!mobileOptimized) return;
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    const viewport = window.visualViewport;
+    function fitMobileViewport() {
+      if (!dialog) return;
+      if (window.innerWidth >= 768) {
+        dialog.style.removeProperty("--dialog-viewport-height");
+        dialog.style.removeProperty("--dialog-viewport-top");
+        return;
+      }
+      dialog.style.setProperty("--dialog-viewport-height", `${viewport?.height ?? window.innerHeight}px`);
+      dialog.style.setProperty("--dialog-viewport-top", `${viewport?.offsetTop ?? 0}px`);
+    }
+    fitMobileViewport();
+    window.addEventListener("resize", fitMobileViewport);
+    viewport?.addEventListener("resize", fitMobileViewport);
+    viewport?.addEventListener("scroll", fitMobileViewport);
+    return () => {
+      window.removeEventListener("resize", fitMobileViewport);
+      viewport?.removeEventListener("resize", fitMobileViewport);
+      viewport?.removeEventListener("scroll", fitMobileViewport);
+      dialog.style.removeProperty("--dialog-viewport-height");
+      dialog.style.removeProperty("--dialog-viewport-top");
+    };
+  }, [mobileOptimized]);
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -77,7 +108,7 @@ export default function Dialog({ labelledBy, busy, canClose, size = "md", onClos
       onClick={(event) => {
         if (event.target === event.currentTarget) close();
       }}
-      className={`m-auto max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] rounded-xl border border-line bg-surface text-foreground shadow-2xl shadow-black/60 backdrop:bg-black/70 motion-safe:animate-fade-in-up ${SIZE_CLASS_NAMES[size]}`}
+      className={`m-auto max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] rounded-xl border border-line bg-surface text-foreground shadow-2xl shadow-black/60 backdrop:bg-black/70 motion-safe:animate-fade-in-up ${SIZE_CLASS_NAMES[size]} ${mobileOptimized ? `${styles.dialog} ${size === "md" ? "max-md:p-4" : ""}` : ""}`}
     >
       <CloseContext value={close}>{children}</CloseContext>
     </dialog>
@@ -123,9 +154,9 @@ export function DialogHeader({
 /** A label/value row; render inside a `<dl>`. */
 export function DialogRow({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div className="flex items-center justify-between gap-4 py-2.5">
+    <div className="flex items-center justify-between gap-4 py-2.5 max-md:flex-col max-md:items-start max-md:gap-1">
       <dt className="text-muted">{label}</dt>
-      <dd className="min-w-0 text-right">{children}</dd>
+      <dd className="min-w-0 text-right max-md:text-left max-md:[overflow-wrap:anywhere]">{children}</dd>
     </div>
   );
 }

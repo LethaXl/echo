@@ -28,9 +28,9 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 
 function Row({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div className="grid grid-cols-[6.5rem_minmax(0,1fr)] items-center gap-4 py-2.5">
+    <div className="grid grid-cols-[6.5rem_minmax(0,1fr)] items-center gap-4 py-2.5 max-md:grid-cols-1 max-md:gap-1">
       <dt className="text-muted">{label}</dt>
-      <dd className="min-w-0 text-right">{children}</dd>
+      <dd className="min-w-0 text-right max-md:text-left max-md:[overflow-wrap:anywhere]">{children}</dd>
     </div>
   );
 }
@@ -64,8 +64,8 @@ function CopyableId({ id }: { id: string }) {
   }
 
   return (
-    <span className="flex min-w-0 items-center justify-end gap-1.5">
-      <span title={id} className="truncate font-mono text-xs text-muted">
+    <span className="flex min-w-0 items-center justify-end gap-1.5 max-md:justify-start">
+      <span title={id} className="truncate font-mono text-xs text-muted max-md:whitespace-normal max-md:[overflow-wrap:anywhere]">
         {id}
       </span>
       <button
@@ -73,7 +73,7 @@ function CopyableId({ id }: { id: string }) {
         onClick={copy}
         aria-label={copied ? "Account ID copied" : "Copy account ID"}
         title={copied ? "Copied" : "Copy account ID"}
-        className={`flex size-6 shrink-0 items-center justify-center rounded-md transition-colors duration-150 hover:bg-elevated focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60 ${
+        className={`flex size-6 shrink-0 items-center justify-center rounded-md transition-colors max-md:size-11 duration-150 hover:bg-elevated focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60 ${
           copied ? "text-accent" : "text-muted hover:text-foreground"
         }`}
       >
@@ -163,11 +163,11 @@ export default function UserDetailsDialog({
 
   if (confirming && details) {
     return (
-      <Dialog labelledBy={titleId} busy={pending} size="compact-panel" onClose={onClose}>
-        <form action={formAction} className="flex min-h-0 flex-1 flex-col">
+      <Dialog labelledBy={titleId} busy={pending} size="compact-panel" onClose={onClose} mobileOptimized>
+        <form action={formAction} className="flex min-h-0 flex-1 flex-col max-md:flex-none">
           <input type="hidden" name="userId" value={details.id} />
           <input type="hidden" name="active" value={deactivating ? "false" : "true"} />
-          <div className="min-h-0 flex-1 overflow-y-auto px-6 pt-6 pb-2 text-center text-sm">
+          <div className="min-h-0 flex-1 overflow-y-auto px-6 pt-6 pb-2 text-center text-sm max-md:flex-none max-md:overflow-visible max-md:px-4 max-md:pt-4">
             <h2 id={titleId} className="text-xl font-semibold tracking-tight text-foreground">
               {deactivating ? "Deactivate account?" : "Reactivate account?"}
             </h2>
@@ -182,7 +182,7 @@ export default function UserDetailsDialog({
               </p>
             )}
           </div>
-          <div className="grid grid-cols-2 gap-3 px-6 pt-4 pb-6">
+          <div className="grid grid-cols-2 gap-3 px-6 pt-4 pb-6 max-md:grid-cols-1 max-md:px-4 max-md:pb-[max(1rem,env(safe-area-inset-bottom))]">
             <button
               type="button"
               autoFocus
@@ -209,8 +209,8 @@ export default function UserDetailsDialog({
   }
 
   return (
-    <Dialog labelledBy={titleId} busy={pending} size="compact-panel" onClose={onClose}>
-      <div className="flex flex-col items-center px-6 pt-7 pb-5 text-center">
+    <Dialog labelledBy={titleId} busy={pending} size="compact-panel" onClose={onClose} mobileOptimized>
+      <div className="flex flex-col items-center px-6 pt-7 pb-5 text-center max-md:shrink-0 max-md:px-4 max-md:py-4">
         {details ? (
           <UserAvatar id={details.id} name={details.name} email={details.email} size="lg" />
         ) : (
@@ -219,13 +219,13 @@ export default function UserDetailsDialog({
         <div className="mt-3 flex max-w-full items-center gap-1.5">
           <h2
             id={titleId}
-            className={`truncate text-xl font-semibold tracking-tight ${named ? "" : "text-muted"}`}
+            className={`truncate text-xl font-semibold tracking-tight max-md:whitespace-normal max-md:[overflow-wrap:anywhere] ${named ? "" : "text-muted"}`}
           >
             {name}
           </h2>
           {details?.isAdmin && <AdminIcon className="size-4" />}
         </div>
-        <p className="mt-0.5 max-w-full truncate text-sm text-muted">{details ? details.email : "Loading…"}</p>
+        <p className="mt-0.5 max-w-full truncate text-sm text-muted max-md:whitespace-normal max-md:[overflow-wrap:anywhere]">{details ? details.email : "Loading…"}</p>
         {details && (
           <div className="mt-3 flex items-center gap-3">
             <AccountStatus deactivated={details.deactivated} />
@@ -239,7 +239,7 @@ export default function UserDetailsDialog({
         )}
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-2">
+      <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-2 max-md:flex-none max-md:overflow-visible max-md:px-4">
         {notice && (
           <p
             role="status"
@@ -281,7 +281,7 @@ export default function UserDetailsDialog({
         )}
       </div>
 
-      <div className="flex items-center justify-center gap-3 px-6 pt-4 pb-6">
+      <div className="flex items-center justify-center gap-3 px-6 pt-4 pb-6 max-md:shrink-0 max-md:flex-col max-md:px-4 max-md:pb-[max(1rem,env(safe-area-inset-bottom))] max-md:[&>button]:w-full max-md:[&>button]:min-w-0">
         <DialogCloseButton data-autofocus autoFocus className={`${buttonClassName("secondary")} min-w-36`}>
           Close
         </DialogCloseButton>

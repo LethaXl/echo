@@ -31,12 +31,12 @@ export default function FieldErrorPopover({ name, message }: { name: string; mes
     <div
       id={fieldErrorId(name)}
       role="alert"
-      className={`pointer-events-none absolute z-20 w-max max-w-60 motion-safe:animate-pop-in ${placement.popover}`}
+      className={`pointer-events-none absolute z-20 w-max max-w-60 motion-safe:animate-pop-in ${placement.popover} max-md:static max-md:mt-2 max-md:ml-0 max-md:w-full max-md:max-w-none max-md:translate-y-0 max-md:[overflow-wrap:anywhere]`}
     >
       <div className="relative flex items-start gap-2 rounded-md border border-danger/40 bg-elevated px-3 py-2 text-xs leading-snug text-foreground shadow-lg shadow-black/30">
         <span
           aria-hidden="true"
-          className={`absolute size-2.5 rotate-45 border-danger/40 bg-elevated ${placement.caret}`}
+          className={`absolute size-2.5 rotate-45 border-danger/40 bg-elevated ${placement.caret} max-md:hidden`}
         />
         <AlertCircleIcon className="mt-px size-3.5 shrink-0 text-danger" />
         <span>{message}</span>

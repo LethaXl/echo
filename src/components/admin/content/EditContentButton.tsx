@@ -160,6 +160,7 @@ function EditContentDialog({
       busy={pending}
       canClose={canClose}
       size="panel"
+      mobileOptimized
       onClose={() => onClose(saved)}
     >
       {saved ? (
@@ -172,18 +173,18 @@ function EditContentDialog({
           </DialogCloseButton>
         </div>
       ) : (
-        <form action={formAction} onSubmit={validate} noValidate className="flex min-h-0 flex-1 flex-col">
+        <form action={formAction} onSubmit={validate} noValidate className="flex min-h-0 flex-1 flex-col max-md:flex-none">
           {Object.entries(hiddenFields).map(([name, value]) => (
             <input key={name} type="hidden" name={name} value={value} />
           ))}
 
-          <div className="border-b border-line px-6 pt-5">
-            <h2 id={titleId} className="truncate text-lg font-semibold tracking-tight">
+          <div className="border-b border-line px-6 pt-5 max-md:px-4 max-md:pt-4">
+            <h2 id={titleId} className="truncate text-lg font-semibold tracking-tight max-md:whitespace-normal max-md:break-words">
               {title}
             </h2>
             <p className="mt-0.5 text-sm text-muted">Fields you don&apos;t change keep following TMDB.</p>
             {sections.length > 1 && (
-              <div role="tablist" aria-label="Sections" className="mt-4 flex gap-6 text-sm">
+              <div role="tablist" aria-label="Sections" className="mt-4 flex gap-6 text-sm max-md:gap-4 max-md:overflow-x-auto max-md:overflow-y-hidden max-md:overscroll-x-contain max-md:pb-px">
                 {sections.map((section) => {
                   const sectionFields = fields.filter((field) => field.section === section.key);
                   const edited = sectionFields.some((field) => values[field.key] !== field.tmdbValue);
@@ -198,7 +199,7 @@ function EditContentDialog({
                       aria-selected={selected}
                       aria-controls={`${titleId}-panel-${section.key}`}
                       onClick={() => setActive(section.key)}
-                      className={`-mb-px flex h-10 items-center gap-2 border-b-2 transition-colors duration-150 ${
+                      className={`-mb-px flex h-10 items-center gap-2 border-b-2 transition-colors duration-150 max-md:h-11 max-md:shrink-0 ${
                         selected
                           ? "border-accent font-semibold text-foreground"
                           : "border-transparent font-medium text-muted hover:text-foreground"
@@ -221,7 +222,7 @@ function EditContentDialog({
             )}
           </div>
 
-          <div className="h-[min(23rem,calc(100dvh-15rem))] overflow-y-auto px-6 py-5">
+          <div className="h-[min(23rem,calc(100dvh-15rem))] overflow-y-auto px-6 py-5 max-md:h-auto max-md:overflow-visible max-md:px-4 max-md:py-4">
             {sections.map((section) => (
               <div
                 key={section.key}
@@ -247,12 +248,12 @@ function EditContentDialog({
             ))}
           </div>
 
-          <div className="flex flex-col gap-3 border-t border-line px-6 py-4">
+          <div className="flex flex-col gap-3 border-t border-line px-6 py-4 max-md:sticky max-md:bottom-0 max-md:z-10 max-md:bg-surface max-md:px-4 max-md:py-3 max-md:pb-[max(0.75rem,env(safe-area-inset-bottom))]">
             {formError && <FormMessage state={formError} />}
             {confirmingDiscard ? (
               <DiscardPrompt onKeepEditing={() => setConfirmingDiscard(false)} />
             ) : (
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-3 max-md:grid-cols-1">
                 <DialogCloseButton disabled={pending} className={`${buttonClassName("secondary")} w-full`}>
                   Cancel
                 </DialogCloseButton>
@@ -300,7 +301,7 @@ function FieldInput({
         rows={6}
         maxLength={field.max}
         onChange={(event) => onChange(event.target.value)}
-        className={`${inputClassName} h-auto resize-none py-2 leading-relaxed`}
+        className={`${inputClassName} h-auto resize-none py-2 leading-relaxed max-md:h-auto max-md:min-h-28`}
       />
     ) : (
       <input
@@ -315,7 +316,7 @@ function FieldInput({
 
   return (
     <div className="flex flex-col gap-1.5">
-      <div className="flex min-h-5 items-center justify-between gap-3">
+      <div className="flex min-h-5 items-center justify-between gap-3 max-md:flex-wrap max-md:gap-1">
         <label htmlFor={id} className={labelClassName}>
           {field.label}
           {edited && <span className="ml-2 text-xs font-normal text-accent">Edited</span>}
@@ -331,7 +332,7 @@ function FieldInput({
         )}
       </div>
       {field.kind === "image" ? (
-        <div className="flex items-start gap-3">
+        <div className="flex items-start gap-3 max-md:flex-col max-md:[&>div:last-child]:w-full">
           <ImagePreview path={imagePath(value)} wide={field.key !== "posterPath"} />
           <div className="min-w-0 flex-1">{input}</div>
         </div>
@@ -367,7 +368,7 @@ function DiscardPrompt({ onKeepEditing }: { onKeepEditing: () => void }) {
   return (
     <div role="alert" className="flex flex-col gap-3">
       <p className="text-center text-sm">Discard your unsaved changes?</p>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3 max-md:grid-cols-1">
         <button
           type="button"
           autoFocus

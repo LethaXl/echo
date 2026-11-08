@@ -130,7 +130,7 @@ function EchoPlusSubscription({
       />
 
       {benefits.length > 0 && (
-        <ul aria-label="Included" className="flex flex-col gap-2 border-t border-line px-6 py-4 text-sm">
+        <ul aria-label="Included" className="flex flex-col gap-2 border-t border-line px-6 py-4 text-sm max-md:px-4">
           {benefits.map((benefit) => (
             <FeatureItem key={benefit} included>
               {benefit}
@@ -140,7 +140,7 @@ function EchoPlusSubscription({
       )}
 
       {/* US-30 View Renewal Information */}
-      <dl className="flex flex-col gap-2.5 border-t border-line px-6 py-4 text-sm">
+      <dl className="flex flex-col gap-2.5 border-t border-line px-6 py-4 text-sm max-md:gap-3 max-md:px-4">
         <Detail label="Status">
           {ending ? (change === "cancel" ? "Cancelled" : `Moving to ${FREE_PLAN_NAME}`) : "Active"}
         </Detail>
@@ -164,7 +164,7 @@ function EchoPlusSubscription({
         )}
       </dl>
 
-      <div className="flex flex-col gap-3 border-t border-line px-6 py-4 sm:flex-row sm:justify-center">
+      <div className="flex flex-col gap-3 border-t border-line px-6 py-4 sm:flex-row sm:justify-center max-md:flex-col max-md:px-4 max-md:[&>button]:min-h-11 max-md:[&>button]:h-auto max-md:[&>button]:py-2 max-md:[&>button]:whitespace-normal">
         {change ? (
           <button
             type="button"
@@ -233,11 +233,11 @@ function FreePlan({
       <PlanHeader name={FREE_PLAN_NAME} price="Free" note="No billing" />
 
       {past && billingOptions.length > 0 ? (
-        <div className="border-t border-line px-6 py-5">
+        <div className="border-t border-line px-6 py-5 max-md:px-4 max-md:py-4">
           <p className="text-sm leading-relaxed text-muted">
             <PastSubscriptionSummary past={past} /> Subscribe again to get <EchoPlus /> back.
           </p>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 max-md:grid-cols-1 max-md:[&>button]:h-auto max-md:[&>button]:min-h-11 max-md:[&>button]:flex-wrap max-md:[&>button]:py-2">
             {billingOptions.map((option) => (
               <button
                 key={option.planId}
@@ -260,7 +260,7 @@ function FreePlan({
           </div>
         </div>
       ) : (
-        <div className="flex flex-col items-start gap-4 border-t border-line px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col items-start gap-4 border-t border-line px-6 py-5 sm:flex-row sm:items-center sm:justify-between max-md:flex-col max-md:items-stretch max-md:px-4 max-md:py-4 max-md:[&>a]:min-h-11">
           <p className="text-sm leading-relaxed text-muted">
             See everything <EchoPlus /> adds to {APP_NAME}.
           </p>
@@ -316,7 +316,7 @@ function PlanHeader({
   highlighted?: boolean;
 }) {
   return (
-    <div className={`px-6 pt-5 pb-6 ${highlighted ? "bg-accent/5" : ""}`}>
+    <div className={`px-6 pt-5 pb-6 max-md:px-4 max-md:py-4 ${highlighted ? "bg-accent/5" : ""}`}>
       <p className="text-xs font-medium tracking-wider text-muted uppercase">Current plan</p>
       <h2 id={HEADING_ID} className="mt-2 text-xl font-semibold tracking-tight">
         {name}
@@ -334,9 +334,9 @@ function PlanHeader({
 
 function Detail({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div className="flex items-baseline justify-between gap-4">
+    <div className="flex items-baseline justify-between gap-4 max-md:flex-col max-md:gap-1">
       <dt className="text-muted">{label}</dt>
-      <dd className="min-w-0 text-right font-medium text-foreground">{children}</dd>
+      <dd className="min-w-0 text-right font-medium text-foreground max-md:text-left max-md:[overflow-wrap:anywhere]">{children}</dd>
     </div>
   );
 }

@@ -72,9 +72,9 @@ export default async function TvShowPage({ params }: PageProps<"/tv/[id]">) {
   ].filter((item): item is string => Boolean(item));
 
   return (
-    <div data-layout="wide" className="pt-2 pb-10 motion-safe:animate-fade-in-up">
+    <div data-layout="wide" className="pt-2 pb-10 motion-safe:animate-fade-in-up max-md:[&>a:first-child]:min-h-11 max-md:[&>a:first-child]:max-w-full max-md:[&>a:first-child]:py-2 max-md:[&>a:first-child>svg]:shrink-0">
       <BrowseBackLink label="Back to Browse" />
-      <div className="mt-6">
+      <div className="mt-6 max-md:mt-4">
         <TitleHero
           title={show}
           meta={meta}
@@ -83,8 +83,10 @@ export default async function TvShowPage({ params }: PageProps<"/tv/[id]">) {
           watchHref={watchShowHref(show.tmdbId)}
         />
       </div>
-      <div className="mt-18 flex flex-col gap-18">
-        <CastList cast={show.cast} />
+      <div className="mt-18 flex flex-col gap-18 max-md:mt-8 max-md:gap-8">
+        <div className="contents max-md:hidden">
+          <CastList cast={show.cast} />
+        </div>
         <SeasonGrid show={show} />
       </div>
     </div>

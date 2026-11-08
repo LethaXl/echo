@@ -59,12 +59,12 @@ export default function AccountSettings({
 
   return (
     <FieldErrorPlacementContext value="below">
-      <nav aria-label="Account settings" className="mt-5">
+      <nav aria-label="Account settings" className="mt-5 max-md:pb-1">
         <div
           role="tablist"
           aria-orientation="horizontal"
           onKeyDown={handleKeyDown}
-          className="relative grid"
+          className="relative grid max-md:w-full max-md:min-w-0"
           style={{ gridTemplateColumns: `repeat(${SECTIONS.length}, minmax(0, 1fr))` }}
         >
           <span
@@ -87,7 +87,7 @@ export default function AccountSettings({
                 aria-controls={panelId(section.id)}
                 tabIndex={selected ? 0 : -1}
                 onClick={() => select(section.id)}
-                className={`group relative flex flex-col items-center gap-3 rounded-sm text-sm transition-colors ${
+                className={`group relative flex flex-col items-center gap-3 rounded-sm text-sm transition-colors max-md:min-h-11 max-md:min-w-0 max-md:gap-2 max-md:px-0.5 max-md:text-center max-md:text-[clamp(0.6875rem,3vw,0.75rem)] max-md:leading-4 ${
                   selected ? "font-medium text-accent" : "text-muted hover:text-foreground"
                 }`}
               >
@@ -107,11 +107,11 @@ export default function AccountSettings({
         </div>
       </nav>
 
-      <div className="mt-6">
+      <div className="mt-6 max-md:mt-4 max-md:min-w-0 max-md:[&_button]:min-h-11 max-md:[overflow-wrap:anywhere]">
         {panel("overview", <AccountDetailsList details={details} />)}
         {panel(
           "subscription",
-          <div className="flex flex-col gap-8">
+          <div className="flex flex-col gap-8 max-md:gap-6">
             <MySubscription
               lookup={details.subscription}
               pastSubscription={details.pastSubscription}

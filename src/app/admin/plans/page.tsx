@@ -15,9 +15,9 @@ export default async function AdminPlansPage() {
   const plans = await getPlanCatalogue();
 
   return (
-    <div data-layout="wide" className="motion-safe:animate-fade-in-up">
+    <div data-layout="wide" className="motion-safe:animate-fade-in-up max-md:[overflow-wrap:anywhere] max-md:[&>a:first-child]:min-h-11 max-md:[&>div>a:first-child]:min-h-11">
       <DetailsBackLink href="/admin" label="Back to Admin Panel" />
-      <h1 className="mt-5 text-2xl font-semibold tracking-tight">Subscription Plans</h1>
+      <h1 className="mt-5 text-2xl font-semibold tracking-tight max-md:mt-3">Subscription Plans</h1>
 
       {plans === null ? (
         <p

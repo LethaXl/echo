@@ -16,6 +16,10 @@ export default function ViewingStatusControl({ item, status, compact = false }: 
   const busy = useRef(false);
   const [feedback, setFeedback] = useState<{ ok: boolean; message: string } | null>(null);
 
+  const mobileOptionClassName = compact
+    ? "max-md:h-9 max-md:gap-1.5 max-md:px-1.5 max-md:text-[11px]"
+    : "max-md:h-11";
+
   function change(next: ViewingStatus | null) {
     if (busy.current || next === status) return;
     busy.current = true;
@@ -43,14 +47,14 @@ export default function ViewingStatusControl({ item, status, compact = false }: 
         triggerClassName={compact ? undefined : "w-40 justify-center"}
         iconOnly={compact}
         align={compact ? "right" : "left"}
-        panelClassName="w-38"
+        panelClassName={compact ? "w-38 max-md:w-28 max-md:-mt-2 max-md:p-1 max-md:rounded-lg" : "w-38 max-md:w-32"}
       >
         {(Object.keys(VIEWING_STATUSES) as ViewingStatus[]).map((option) => {
           const Icon = option === "watching" ? EyeIcon : CircleCheckIcon;
           const selected = status === option;
           return (
             <button key={option} type="button" aria-pressed={selected} onClick={() => change(option)}
-              className={`flex h-8 w-full items-center justify-center gap-2 rounded-md px-2.5 text-xs transition-colors hover:bg-surface ${selected ? "font-medium text-accent" : "text-foreground"}`}>
+              className={`flex h-8 ${mobileOptionClassName} w-full items-center justify-center gap-2 rounded-md px-2.5 text-xs transition-colors hover:bg-surface ${selected ? "font-medium text-accent" : "text-foreground"}`}>
               <Icon className={`size-3.5 shrink-0 ${selected ? "text-accent" : "text-muted"}`} />
               {VIEWING_STATUSES[option]}
             </button>
@@ -58,13 +62,13 @@ export default function ViewingStatusControl({ item, status, compact = false }: 
         })}
         <div className="my-1 border-t border-line" />
         <button type="button" disabled={status === null} onClick={() => change(null)}
-          className="flex h-8 w-full items-center justify-center gap-2 rounded-md px-2.5 text-xs text-muted transition-colors hover:bg-surface hover:text-foreground disabled:pointer-events-none disabled:opacity-40">
+          className={`flex h-8 ${mobileOptionClassName} w-full items-center justify-center gap-2 rounded-md px-2.5 text-xs text-muted transition-colors hover:bg-surface hover:text-foreground disabled:pointer-events-none disabled:opacity-40`}>
           <XIcon className="size-3.5" />Clear status
         </button>
       </FilterMenu>
       {feedback && (
         <p role={feedback.ok ? "status" : "alert"}
-          className={feedback.ok ? "sr-only" : compact ? "absolute top-full right-0 z-20 mt-2 w-48 rounded-md border border-line bg-surface p-2 text-xs text-danger" : "mt-2 max-w-xs text-xs text-danger"}>
+          className={feedback.ok ? "sr-only" : compact ? "absolute top-full right-0 z-20 mt-2 w-48 max-md:fixed max-md:top-auto max-md:right-4 max-md:bottom-4 max-md:left-4 max-md:w-auto rounded-md border border-line bg-surface p-2 text-xs text-danger" : "mt-2 max-w-xs text-xs text-danger"}>
           {feedback.message}
         </p>
       )}

@@ -1,0 +1,10 @@
+/* The desktop row's existing scrollbar rules remain untouched. */
+@media (width < 768px) {
+  .scroller {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-accent) var(--color-elevated);
+  }
+  .scroller::-webkit-scrollbar { display: block; height: 4px; }
+  .scroller::-webkit-scrollbar-track { background: var(--color-elevated); border-radius: 999px; }
+  .scroller::-webkit-scrollbar-thumb { background: var(--color-accent); border-radius: 999px; }
+}

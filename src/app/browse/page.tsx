@@ -40,7 +40,7 @@ async function BrowseDiscovery({ echo, seed, echoFrom, previous }: {
   const nextIndex = otherStarts[echoSelectionIndex(`${nextSeed}:start`, otherStarts.length)];
 
   return (
-    <div className="flex flex-col gap-14">
+    <div className="flex flex-col gap-14 max-md:gap-8">
       <MediaRow title="Trending Now" items={trending} ranked />
       {selectedEcho && (
         <EchoTrail
@@ -54,10 +54,10 @@ async function BrowseDiscovery({ echo, seed, echoFrom, previous }: {
         />
       )}
       <MediaRow title="Echo Picks" echoMark items={echoPicks} />
-      <div className="border-t border-line pt-10">
+      <div className="border-t border-line pt-10 max-md:pt-6">
         <MediaRow title="Popular Movies" items={popularMovies} showMediaType={false} />
       </div>
-      <div className="border-t border-line pt-10">
+      <div className="border-t border-line pt-10 max-md:pt-6">
         <MediaRow title="Popular TV Shows" items={popularTvShows} showMediaType={false} />
       </div>
     </div>

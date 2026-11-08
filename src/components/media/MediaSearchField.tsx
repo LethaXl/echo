@@ -38,14 +38,14 @@ export default function MediaSearchField({
         autoComplete="off"
         spellCheck={false}
         enterKeyHint="search"
-        className="h-9 w-full rounded-full border border-line bg-surface pr-10 pl-9 text-[13px] text-foreground transition-colors placeholder:text-muted/70 hover:border-muted/40 focus:border-accent/70 focus:outline-none [&::-webkit-search-cancel-button]:appearance-none"
+        className="h-9 w-full max-md:h-11 max-md:text-base rounded-full border border-line bg-surface pr-10 pl-9 text-[13px] text-foreground transition-colors placeholder:text-muted/70 hover:border-muted/40 focus:border-accent/70 focus:outline-none [&::-webkit-search-cancel-button]:appearance-none"
       />
       {value && (
         <button
           type="button"
           onClick={onClear}
           aria-label={`Clear ${label.toLowerCase()}`}
-          className="absolute top-1/2 right-1.5 flex size-6 -translate-y-1/2 items-center justify-center rounded-full text-muted transition-colors hover:bg-elevated hover:text-foreground"
+          className="absolute top-1/2 right-1.5 flex size-6 max-md:right-0.5 max-md:size-10 -translate-y-1/2 items-center justify-center rounded-full text-muted transition-colors hover:bg-elevated hover:text-foreground"
         >
           <XIcon className="size-3.5" />
         </button>

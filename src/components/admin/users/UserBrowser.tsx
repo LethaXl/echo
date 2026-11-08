@@ -69,10 +69,10 @@ export default function UserBrowser({
 
   return (
     <OpenAccountContext value={setAccount}>
-      <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+      <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center max-md:flex-col max-md:items-stretch max-md:[&_input]:text-base">
         <form
           role="search"
-          className="min-w-0 flex-1 sm:max-w-sm"
+          className="min-w-0 flex-1 sm:max-w-sm max-md:w-full max-md:max-w-none"
           onSubmit={(event) => {
             event.preventDefault();
             const nextQuery = searchable(value);
@@ -97,7 +97,7 @@ export default function UserBrowser({
         <div
           role="group"
           aria-label="Account status"
-          className="flex h-9 shrink-0 self-start rounded-full border border-accent/30 bg-accent/10 p-[3px] sm:self-auto"
+          className="flex h-9 shrink-0 self-start rounded-full border border-accent/30 bg-accent/10 p-[3px] sm:self-auto max-md:h-auto max-md:w-full max-md:self-stretch"
         >
           {ACCOUNT_STATUS_FILTERS.map((filter) => {
             const selected = requested.status === filter;
@@ -109,7 +109,7 @@ export default function UserBrowser({
                 onClick={() => {
                   if (!selected) navigate({ query: searchable(value), status: filter });
                 }}
-                className={`rounded-full px-3.5 text-[13px] font-semibold transition-colors duration-150 ${
+                className={`rounded-full px-3.5 text-[13px] font-semibold transition-colors duration-150 max-md:min-h-11 max-md:min-w-0 max-md:flex-1 max-md:px-2 ${
                   selected ? "bg-accent text-on-accent" : "text-muted hover:text-foreground"
                 }`}
               >

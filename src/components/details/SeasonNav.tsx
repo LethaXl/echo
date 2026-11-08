@@ -1,3 +1,4 @@
+import scrollStyles from "@/components/media/MobileScroll.module.css";
 import Link from "next/link";
 import SeasonPicker from "@/components/details/SeasonPicker";
 import { formatSeasonLabel } from "@/lib/format";
@@ -25,7 +26,7 @@ export default function SeasonNav({ showId, seasons, currentSeasonNumber }: Seas
 
   return (
     <nav aria-label="Seasons" className="border-b border-line">
-      <div className="-mb-px flex gap-7 overflow-x-auto [scrollbar-width:none]">
+      <div className={`${scrollStyles.scroller} -mb-px flex gap-7 overflow-x-auto [scrollbar-width:none] max-md:gap-5 max-md:overscroll-x-contain`}>
         {seasons.map((season) => {
           const current = season.seasonNumber === currentSeasonNumber;
           return (
@@ -33,7 +34,7 @@ export default function SeasonNav({ showId, seasons, currentSeasonNumber }: Seas
               key={season.seasonNumber}
               href={seasonHref(showId, season.seasonNumber)}
               aria-current={current ? "page" : undefined}
-              className={`shrink-0 rounded-t-sm border-b-2 pt-1 pb-3 text-[0.9375rem] font-medium whitespace-nowrap transition-colors duration-150 ${
+              className={`shrink-0 max-md:inline-flex max-md:min-h-11 max-md:items-center max-md:py-2 rounded-t-sm border-b-2 pt-1 pb-3 text-[0.9375rem] font-medium whitespace-nowrap transition-colors duration-150 ${
                 current
                   ? "border-accent text-foreground"
                   : "border-transparent text-muted hover:border-muted/40 hover:text-foreground"

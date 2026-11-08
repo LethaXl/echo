@@ -5,7 +5,7 @@ import { requireAdmin } from "@/lib/admin/access";
 export const metadata: Metadata = { title: "Admin Panel", robots: { index: false, follow: false } };
 
 const CARD =
-  "group rounded-xl border border-line bg-surface px-8 py-6 text-center transition-colors duration-150 hover:border-accent/40 hover:bg-elevated";
+  "group rounded-xl border border-line bg-surface px-8 py-6 text-center transition-colors duration-150 hover:border-accent/40 hover:bg-elevated max-md:rounded-md max-md:border-l-accent/60 max-md:px-4 max-md:py-3 max-md:text-left";
 
 // Each section is built in a later Sprint 4 story.
 const sections: { title: string; description: string; href?: string }[] = [
@@ -43,10 +43,10 @@ export default async function AdminPage() {
         {sections.map((section) => {
           const content = (
             <>
-              <h2 className="text-[1.0625rem] font-semibold tracking-tight transition-colors duration-150 group-hover:text-accent-hover">
+              <h2 className="text-[1.0625rem] font-semibold tracking-tight transition-colors duration-150 group-hover:text-accent-hover max-md:text-base">
                 {section.title}
               </h2>
-              <p className="mt-1.5 text-sm text-muted">{section.description}</p>
+              <p className="mt-1.5 text-sm text-muted max-md:mt-1 max-md:text-xs max-md:leading-relaxed">{section.description}</p>
             </>
           );
           return (

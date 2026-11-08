@@ -19,7 +19,7 @@ export default function Toast({ message, onDismiss, tone = "error", duration = 6
   return (
     <div
       role={isError ? "alert" : "status"}
-      className="group fixed right-6 bottom-6 z-50 flex max-w-sm items-start gap-2.5 rounded-md border border-line bg-elevated py-2.5 pr-2 pl-3.5 text-sm shadow-md shadow-black/30 motion-safe:animate-toast-in"
+      className="group fixed right-6 bottom-6 z-50 flex max-w-sm items-start gap-2.5 rounded-md border border-line bg-elevated py-2.5 pr-2 pl-3.5 text-sm shadow-md shadow-black/30 motion-safe:animate-toast-in max-md:right-[max(1rem,env(safe-area-inset-right))] max-md:bottom-[max(1rem,env(safe-area-inset-bottom))] max-md:left-[max(1rem,env(safe-area-inset-left))] max-md:max-w-none max-md:[overflow-wrap:anywhere]"
     >
       <Icon className={`mt-0.5 size-4 shrink-0 ${ICON_CLASS_NAMES[tone]}`} />
       <div className="min-w-0 flex-1">
@@ -30,7 +30,7 @@ export default function Toast({ message, onDismiss, tone = "error", duration = 6
         type="button"
         onClick={onDismiss}
         aria-label="Dismiss"
-        className="-my-0.5 flex size-6 shrink-0 items-center justify-center rounded-sm text-muted transition-colors hover:text-foreground"
+        className="-my-0.5 flex size-6 shrink-0 items-center justify-center rounded-sm text-muted transition-colors hover:text-foreground max-md:size-11"
       >
         <XIcon className="size-3.5" />
       </button>

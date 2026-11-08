@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { ChevronDownIcon, EchoWaveIcon } from "@/components/icons";
 import MediaCard from "@/components/media/MediaCard";
+import scrollStyles from "./MobileScroll.module.css";
 import type { CatalogueItem } from "@/types/media";
 
 type MediaRowProps = {
@@ -17,7 +18,7 @@ type MediaRowProps = {
 };
 
 // --cols is how many cards fit across the row.
-const COLUMNS_CLASS_NAME = "[--cols:4] lg:[--cols:5] xl:[--cols:6] 2xl:[--cols:7]";
+const COLUMNS_CLASS_NAME = "[--cols:4] max-md:[--cols:2.5] lg:[--cols:5] xl:[--cols:6] 2xl:[--cols:7]";
 
 export default function MediaRow({
   title,
@@ -67,7 +68,7 @@ export default function MediaRow({
   const arrowClassName =
     "flex h-14 w-8 items-center justify-center rounded-md border border-line bg-elevated text-muted transition-colors duration-150 hover:border-accent/50 hover:text-accent focus-visible:border-accent/50 focus-visible:text-accent";
   // Spans the posters only: below the rank line (if any) and above the title block.
-  const arrowTrackClassName = `absolute bottom-[3.125rem] flex items-center ${
+  const arrowTrackClassName = `absolute bottom-[3.125rem] max-md:hidden flex items-center ${
     ranked ? "top-[1.625rem]" : "top-0"
   }`;
 
@@ -85,12 +86,12 @@ export default function MediaRow({
             tabIndex={0}
             aria-label={`${title} titles`}
             onScroll={updateScrollState}
-            className={`-mx-1 -my-2 flex snap-x snap-mandatory scroll-px-1 gap-5 overflow-x-auto px-1 py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${COLUMNS_CLASS_NAME}`}
+            className={`${scrollStyles.scroller} -mx-1 -my-2 flex snap-x snap-mandatory scroll-px-1 gap-5 max-md:gap-2 max-md:overscroll-x-contain overflow-x-auto px-1 py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${COLUMNS_CLASS_NAME}`}
           >
             {items.map((item, index) => (
               <li
                 key={`${item.mediaType}-${item.tmdbId}`}
-                className="w-[calc((100%-(var(--cols)-1)*1.25rem)/var(--cols))] shrink-0 snap-start"
+                className="w-[calc((100%-(var(--cols)-1)*1.25rem)/var(--cols))] shrink-0 snap-start max-md:w-[calc((100%-1rem)/2.5)]"
               >
                 <MediaCard
                   item={item}

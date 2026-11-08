@@ -45,7 +45,7 @@ export default function UpgradeDialog({ current, option, onClose }: UpgradeDialo
   const currentPeriod = BILLING_PERIODS[current.billingInterval];
 
   return (
-    <Dialog labelledBy={titleId} busy={pending} onClose={onClose}>
+    <Dialog labelledBy={titleId} busy={pending} onClose={onClose} mobileOptimized>
       {state.status === "success" ? (
         <div role="status">
           <DialogHeader
@@ -135,7 +135,7 @@ export default function UpgradeDialog({ current, option, onClose }: UpgradeDialo
 
             {formError && <FormMessage state={formError} />}
 
-            <div className="mt-2 grid grid-cols-2 gap-3">
+            <div className="mt-2 grid grid-cols-2 gap-3 max-md:grid-cols-1 max-md:[&>button]:min-h-11">
               <DialogCloseButton
                 disabled={pending}
                 className={`${buttonClassName("secondary")} w-full`}

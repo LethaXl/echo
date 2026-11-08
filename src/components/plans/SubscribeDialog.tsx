@@ -41,7 +41,7 @@ export default function SubscribeDialog({
   const formError = state.status === "error" && !state.field ? state : null;
 
   return (
-    <Dialog labelledBy={titleId} busy={pending} onClose={onClose}>
+    <Dialog labelledBy={titleId} busy={pending} onClose={onClose} mobileOptimized>
       {state.status === "success" ? (
         <div role="status">
           <DialogHeader
@@ -66,7 +66,7 @@ export default function SubscribeDialog({
               <DialogRow label="Next renewal">{formatDate(state.values.renewsAt)}</DialogRow>
             )}
           </DialogSummary>
-          <div className={`mt-6 grid gap-3 ${showAccountLink ? "grid-cols-2" : ""}`}>
+          <div className={`mt-6 grid gap-3 max-md:grid-cols-1 max-md:[&>*]:min-h-11 ${showAccountLink ? "grid-cols-2" : ""}`}>
             <DialogCloseButton
               autoFocus
               className={`${buttonClassName(showAccountLink ? "secondary" : "primary")} w-full`}
@@ -121,7 +121,7 @@ export default function SubscribeDialog({
 
             {formError && <FormMessage state={formError} />}
 
-            <div className="mt-2 grid grid-cols-2 gap-3">
+            <div className="mt-2 grid grid-cols-2 gap-3 max-md:grid-cols-1 max-md:[&>button]:min-h-11">
               <DialogCloseButton
                 disabled={pending}
                 className={`${buttonClassName("secondary")} w-full`}

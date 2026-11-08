@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
 export const RESULTS_GRID_CLASS_NAME =
-  "grid grid-cols-4 gap-x-5 gap-y-8 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7";
+  "grid grid-cols-4 gap-x-5 gap-y-8 max-md:grid-cols-2 max-md:gap-x-3 max-md:gap-y-6 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7";
 
 const BLOCK = "rounded-md bg-elevated motion-safe:animate-pulse";
 
@@ -14,8 +14,8 @@ type ResultsHeadingProps = {
 export function ResultsHeading({ title, summary }: ResultsHeadingProps) {
   return (
     // Leaves room for the sort menu on the right.
-    <div className="mb-5 border-b border-line pr-64 pb-3">
-      <h2 className="truncate text-lg/7 font-semibold tracking-tight">{title}</h2>
+    <div className="mb-5 border-b border-line pr-64 pb-3 max-md:pr-0">
+      <h2 className="truncate text-lg/7 max-md:whitespace-normal max-md:break-words font-semibold tracking-tight">{title}</h2>
       <p className="min-h-5 text-[13px]/5 text-muted tabular-nums">{summary}</p>
     </div>
   );

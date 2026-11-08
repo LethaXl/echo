@@ -44,10 +44,10 @@ export default async function AdminUsersPage({ searchParams }: PageProps<"/admin
   const first = (page - 1) * USERS_PER_PAGE + 1;
 
   return (
-    <div data-layout="wide" className="motion-safe:animate-fade-in-up">
+    <div data-layout="wide" className="motion-safe:animate-fade-in-up max-md:[overflow-wrap:anywhere] max-md:[&>a:first-child]:min-h-11 max-md:[&>div>a:first-child]:min-h-11">
       <div className="mx-auto w-full max-w-4xl">
         <DetailsBackLink href="/admin" label="Back to Admin Panel" />
-        <h1 className="mt-5 text-2xl font-semibold tracking-tight">User Management</h1>
+        <h1 className="mt-5 text-2xl font-semibold tracking-tight max-md:mt-3">User Management</h1>
 
         <UserBrowser query={query} status={status}>
           {result === null ? (
@@ -67,7 +67,7 @@ export default async function AdminUsersPage({ searchParams }: PageProps<"/admin
             <>
               <UserList users={result.users} />
 
-              <nav aria-label="Pages" className="mt-4 flex items-center justify-between gap-4 px-1">
+              <nav aria-label="Pages" className="mt-4 flex items-center justify-between gap-4 px-1 max-md:flex-wrap max-md:gap-2">
                 <p className="text-[13px] text-muted tabular-nums">
                   {pageCount > 1 && `${first}–${first + result.users.length - 1} of `}
                   <span className="font-semibold text-accent">{result.total}</span>{" "}
@@ -101,7 +101,7 @@ export default async function AdminUsersPage({ searchParams }: PageProps<"/admin
 }
 
 const PAGE_LINK =
-  "flex size-8 items-center justify-center rounded-full border transition-colors duration-150";
+  "flex size-8 items-center justify-center rounded-full border transition-colors duration-150 max-md:size-11";
 
 function PageLink({ href, label, children }: { href: string | null; label: string; children: ReactNode }) {
   if (!href) {

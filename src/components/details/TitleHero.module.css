@@ -1,0 +1,62 @@
+/* Mobile detail presentation; no rules apply at or above 768px. */
+@media (width < 768px) {
+  .actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.25fr) minmax(0, 0.7fr);
+    gap: 0.5rem;
+    margin-top: 1.25rem;
+  }
+
+  .actions .primary { grid-column: 1 / -1; width: 100%; }
+  .actions [data-title-action] { display: block; min-width: 0; }
+  .actions [data-title-action]:empty { display: none; }
+  .actions [data-title-action="access"],
+  .actions [data-title-action="watchlist"]:has(> a[href="/plans"]),
+  .actions [data-title-action]:has(> p[role="alert"]) { grid-column: 1 / -1; }
+
+  .actions [data-title-action="watchlist"] > a { width: 100%; }
+  .actions [data-title-action="watchlist"] > div > button,
+  .actions [data-title-action="watchlist"] > div > a,
+  .actions [data-title-action="viewing"] button[aria-controls],
+  .actions [data-title-action="rating"] > button {
+    width: 100%;
+    min-width: 0;
+    height: 2.75rem;
+    padding-inline: 0.25rem;
+    gap: 0.25rem;
+    font-size: clamp(0.6875rem, 2.9vw, 0.8125rem);
+    white-space: nowrap;
+  }
+  .actions [data-title-action="viewing"] button[aria-controls] > span:has(svg) { display: none; }
+
+  .actions [data-title-action="access"] > div {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    width: 100%;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8125rem;
+  }
+  .actions [data-title-action="access"] > div > span[aria-hidden="true"] { display: none; }
+  .actions [data-title-action="access"] a { min-height: 2.75rem; white-space: nowrap; }
+
+  /* Native dialogs remain descendants of the detail actions in the top layer.
+     Scoping here keeps Cave's rating dialog and shared action controls intact. */
+  .actions dialog { padding: 1rem; max-height: calc(100dvh - 2rem); }
+  .actions dialog > div:first-of-type { justify-content: flex-end; }
+  .actions dialog [aria-label="Close rating dialog"] { width: 2.75rem; height: 2.75rem; }
+  .actions dialog > div:nth-of-type(2) {
+    display: grid;
+    grid-template-columns: 5rem minmax(0, 1fr);
+    gap: 0 0.75rem;
+    margin-top: 0.5rem;
+    text-align: left;
+  }
+  .actions dialog > div:nth-of-type(2) > div { grid-row: 1 / 3; width: 5rem; align-self: start; }
+  .actions dialog h3 { margin-top: 0; font-size: 1.125rem; line-height: 1.35; overflow-wrap: anywhere; }
+  .actions dialog > div:nth-of-type(2) > p { flex-wrap: wrap; justify-content: flex-start; }
+  .actions dialog > div:nth-of-type(3) { margin-top: 1rem; padding-top: 1rem; }
+  .actions dialog [aria-label^="Clear rating"] { min-height: 2.75rem; margin-top: 0.25rem; }
+  .actions dialog [aria-label^="Clear rating"].invisible,
+  .actions dialog section > div > div[aria-hidden="true"]:empty { display: none; }
+}

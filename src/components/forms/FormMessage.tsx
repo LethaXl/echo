@@ -19,7 +19,7 @@ export default function FormMessage({ state }: { state: FormState }) {
       }`}
     >
       <Icon className={`mt-0.5 size-4 shrink-0 ${isError ? "" : "text-accent"}`} />
-      <span>{state.message}</span>
+      <span className="max-md:min-w-0 max-md:[overflow-wrap:anywhere]">{state.message}</span>
     </p>
   );
 }

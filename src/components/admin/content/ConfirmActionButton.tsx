@@ -93,7 +93,7 @@ function ConfirmActionDialog({
   const succeeded = state.status === "success";
 
   return (
-    <Dialog labelledBy={titleId} busy={pending} onClose={() => onClose(succeeded)}>
+    <Dialog labelledBy={titleId} busy={pending} onClose={() => onClose(succeeded)} mobileOptimized>
       {succeeded ? (
         <div role="status">
           <DialogHeader titleId={titleId} title={state.title ?? successTitle}>
@@ -113,7 +113,7 @@ function ConfirmActionDialog({
               <input key={name} type="hidden" name={name} value={value} />
             ))}
             {state.status === "error" && <FormMessage state={state} />}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3 max-md:grid-cols-1">
               <DialogCloseButton
                 disabled={pending}
                 data-autofocus

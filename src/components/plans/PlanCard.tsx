@@ -10,6 +10,7 @@ type PlanCardProps = {
   features: ReactNode;
   action: ReactNode;
   highlighted?: boolean;
+  compactMobile?: boolean;
 };
 
 export default function PlanCard({
@@ -20,21 +21,22 @@ export default function PlanCard({
   features,
   action,
   highlighted = false,
+  compactMobile = false,
 }: PlanCardProps) {
   return (
     <article
-      className={`flex flex-col rounded-md border bg-surface px-7 py-5 ${
+      className={`flex flex-col rounded-md border bg-surface px-7 py-5 max-md:min-w-0 max-md:px-4 max-md:py-4 max-md:[overflow-wrap:anywhere] max-md:[&_button]:min-h-11 max-md:[&_a]:min-h-11 ${
         highlighted ? "border-accent/40" : "border-line"
       }`}
     >
-      <div className="flex min-h-8 items-center justify-between gap-4">
+      <div className={`flex min-h-8 items-center justify-between gap-4 max-md:flex-wrap max-md:gap-3 ${compactMobile ? "max-md:min-h-0" : ""}`}>
         <h2 className="text-lg font-semibold tracking-tight">{name}</h2>
         {aside}
       </div>
-      <div className="mt-3">{price}</div>
+      <div className={`mt-3 ${compactMobile ? "max-md:mt-0" : ""}`}>{price}</div>
       <p className="mt-1.5 text-sm text-muted">{description}</p>
-      <div className="mt-4 border-t border-line pt-4">{features}</div>
-      <div className="mt-auto pt-5">{action}</div>
+      <div className={`mt-4 border-t border-line pt-4 ${compactMobile ? "max-md:mt-3 max-md:pt-3" : ""}`}>{features}</div>
+      <div className={`mt-auto pt-5 max-md:[&>*]:h-auto max-md:[&>*]:min-h-11 max-md:[&>*]:py-2 max-md:[&>*]:text-center ${compactMobile ? "max-md:pt-3" : ""}`}>{action}</div>
     </article>
   );
 }

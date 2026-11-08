@@ -43,7 +43,7 @@ export default function AddContentButton() {
         type="button"
         aria-haspopup="dialog"
         onClick={() => setOpen(true)}
-        className="inline-flex h-9 shrink-0 items-center justify-center rounded-full bg-accent px-4 text-[13px] font-medium text-on-accent transition-colors duration-150 hover:bg-accent-hover active:translate-y-px"
+        className="inline-flex h-9 shrink-0 items-center justify-center rounded-full bg-accent px-4 text-[13px] font-medium text-on-accent transition-colors duration-150 hover:bg-accent-hover active:translate-y-px max-md:h-11 max-md:self-end"
       >
         Add Content
       </button>
@@ -95,13 +95,13 @@ function AddContentDialog({ onClose }: { onClose: (added: boolean) => void }) {
   const lookupError = lookup.status === "error" && lookup.url === url ? lookup.message : null;
 
   return (
-    <Dialog labelledBy={titleId} busy={pending} onClose={() => onClose(succeeded)}>
+    <Dialog labelledBy={titleId} busy={pending} onClose={() => onClose(succeeded)} mobileOptimized>
       {succeeded ? (
         <div role="status">
           <DialogHeader titleId={titleId} title={state.title ?? "Added"}>
             {state.message}
           </DialogHeader>
-          <div className={`mt-6 grid gap-3 ${preview ? "grid-cols-2" : ""}`}>
+          <div className={`mt-6 grid gap-3 max-md:grid-cols-1 ${preview ? "grid-cols-2" : ""}`}>
             {preview && (
               <Link href={preview.manageHref} className={`${buttonClassName("secondary")} w-full`}>
                 Manage
@@ -151,7 +151,7 @@ function AddContentDialog({ onClose }: { onClose: (added: boolean) => void }) {
             {preview && <PreviewCard preview={preview} />}
 
             {state.status === "error" && <FormMessage state={state} />}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3 max-md:grid-cols-1">
               <DialogCloseButton disabled={pending} className={`${buttonClassName("secondary")} w-full`}>
                 Cancel
               </DialogCloseButton>
@@ -178,8 +178,8 @@ function PreviewCard({ preview }: { preview: AddContentPreview }) {
       />
       <div className="min-w-0 flex-1">
         <p className="text-[11px] font-semibold tracking-wide text-accent uppercase">{preview.kindLabel}</p>
-        <p className="mt-0.5 truncate text-sm font-medium">{preview.title}</p>
-        <p className="mt-0.5 truncate text-xs text-muted">{preview.details}</p>
+        <p className="mt-0.5 truncate text-sm font-medium max-md:whitespace-normal max-md:break-words">{preview.title}</p>
+        <p className="mt-0.5 truncate text-xs text-muted max-md:whitespace-normal max-md:break-words">{preview.details}</p>
         {preview.alreadyAdded && (
           <p className="mt-1.5 text-xs text-muted">
             Already added.{" "}

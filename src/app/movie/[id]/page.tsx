@@ -52,9 +52,9 @@ export default async function MoviePage({ params }: PageProps<"/movie/[id]">) {
   ].filter((item): item is string => Boolean(item));
 
   return (
-    <div data-layout="wide" className="pt-2 pb-10 motion-safe:animate-fade-in-up">
+    <div data-layout="wide" className="pt-2 pb-10 motion-safe:animate-fade-in-up max-md:[&>a:first-child]:min-h-11 max-md:[&>a:first-child]:max-w-full max-md:[&>a:first-child]:py-2 max-md:[&>a:first-child>svg]:shrink-0">
       <BrowseBackLink label="Back to Browse" />
-      <div className="mt-6">
+      <div className="mt-6 max-md:mt-4">
         <TitleHero
           title={movie}
           meta={meta}
@@ -63,7 +63,7 @@ export default async function MoviePage({ params }: PageProps<"/movie/[id]">) {
           watchHref={watchMovieHref(movie.tmdbId)}
         />
       </div>
-      <div className="mt-18">
+      <div className="mt-18 max-md:hidden">
         <CastList cast={movie.cast} />
       </div>
     </div>

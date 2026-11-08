@@ -1,0 +1,17 @@
+/* Keep desktop dialog geometry and animation unchanged. */
+@media (width < 768px) {
+  .dialog {
+    top: calc(var(--dialog-viewport-top, 0px) + var(--dialog-viewport-height, 100dvh) / 2);
+    bottom: auto;
+    margin-block: 0;
+    translate: 0 -50%;
+    max-height: calc(var(--dialog-viewport-height, 100dvh) - 2rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    overflow-wrap: anywhere;
+  }
+
+  .dialog > * { min-width: 0; }
+  .dialog :is(button, a) { min-height: 2.75rem; }
+  .dialog :is(input, textarea) { scroll-margin-block: 1rem; }
+}

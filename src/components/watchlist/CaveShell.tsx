@@ -22,14 +22,14 @@ export default function CaveShell({ children, tab = "watchlist" }: { children: R
         title="A place to call your own."
         description="Your watchlist, your ratings and everything worth revisiting."
       />
-      <nav aria-label="Cave sections" className="mt-6 flex flex-wrap items-center gap-x-7 border-b border-line text-[15px]">
+      <nav aria-label="Cave sections" className="mt-6 flex flex-wrap items-center gap-x-7 max-md:flex-nowrap max-md:gap-x-5 max-md:overflow-x-auto max-md:whitespace-nowrap border-b border-line text-[15px]">
         {([
           { key: "watchlist", label: "Watchlist", href: "/cave" },
           { key: "viewing", label: "Viewing Status", href: "/cave?tab=viewing" },
           { key: "ratings", label: "My Ratings", href: "/cave?tab=ratings" },
         ] as const).map((section) => (
           <Link key={section.key} href={section.href} scroll={false} aria-current={tab === section.key ? "page" : undefined}
-            className={`flex h-11 items-center gap-2 border-b-2 transition-colors ${tab === section.key ? "border-accent font-semibold text-foreground" : "border-transparent font-medium text-muted hover:text-foreground"}`}>
+            className={`flex h-11 max-md:shrink-0 items-center gap-2 border-b-2 transition-colors ${tab === section.key ? "border-accent font-semibold text-foreground" : "border-transparent font-medium text-muted hover:text-foreground"}`}>
             <span aria-hidden="true" className={`size-1.5 rounded-full ${tab === section.key ? "bg-accent" : "bg-muted/50"}`} />
             {section.label}
           </Link>

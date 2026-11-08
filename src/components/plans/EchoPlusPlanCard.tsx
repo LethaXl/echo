@@ -110,7 +110,7 @@ export default function EchoPlusPlanCard({
             <div
               role="radiogroup"
               aria-label="Billing"
-              className="flex rounded-md border border-line bg-background p-0.5 text-xs font-medium"
+              className="flex rounded-md border border-line bg-background p-0.5 text-xs font-medium max-md:ml-auto max-md:min-w-0"
             >
               {options.map((option) => {
                 const checked = option.planId === selected.planId;
@@ -121,7 +121,7 @@ export default function EchoPlusPlanCard({
                     role="radio"
                     aria-checked={checked}
                     onClick={() => setSelectedId(option.planId)}
-                    className={`rounded-[5px] px-3 py-1.5 transition-colors duration-150 ${
+                    className={`rounded-[5px] px-3 py-1.5 transition-colors duration-150 max-md:min-h-11 max-md:px-2.5 ${
                       checked ? "bg-elevated text-foreground" : "text-muted hover:text-foreground"
                     }`}
                   >

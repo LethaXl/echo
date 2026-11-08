@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import styles from "./SimulatedPlayer.module.css";
 import {
   useEffect,
   useRef,
@@ -11,6 +12,7 @@ import {
 } from "react";
 import TmdbImage from "@/components/details/TmdbImage";
 import {
+  ArrowLeftIcon,
   EchoWaveIcon,
   FilmIcon,
   MaximizeIcon,
@@ -22,6 +24,8 @@ import {
 } from "@/components/icons";
 import ViewerBackdrop from "@/components/viewer/ViewerBackdrop";
 import SeekBar from "@/components/viewer/SeekBar";
+import useMobileFullscreen from "@/components/viewer/useMobileFullscreen";
+import useAutoHideControls from "@/components/viewer/useAutoHideControls";
 import { formatRuntime } from "@/lib/format";
 import { formatPlaybackTime } from "@/lib/viewer/time";
 import type { UpNext, ViewerContent } from "@/lib/viewer/types";
@@ -113,10 +117,14 @@ function ControlButton({
   label,
   onClick,
   children,
+  mobileText,
+  className = "",
 }: {
   label: string;
   onClick: () => void;
   children: ReactNode;
+  mobileText?: string;
+  className?: string;
 }) {
   return (
     <button
@@ -124,9 +132,10 @@ function ControlButton({
       aria-label={label}
       title={label}
       onClick={onClick}
-      className="flex size-10 shrink-0 items-center justify-center rounded-md text-foreground/90 transition-colors hover:bg-foreground/10 hover:text-foreground"
+      className={`flex size-10 shrink-0 items-center justify-center rounded-md text-foreground/90 transition-colors hover:bg-foreground/10 hover:text-foreground max-md:size-11 ${className}`}
     >
       {children}
+      {mobileText && <span className="hidden max-md:inline">{mobileText}</span>}
     </button>
   );
 }
@@ -165,7 +174,7 @@ function UpNextCard({ upNext }: { upNext: UpNext }) {
 }
 
 const PANEL_BUTTON_BASE =
-  "inline-flex h-9 items-center justify-center gap-2 rounded-md px-3.5 text-sm font-medium transition active:translate-y-px";
+  "inline-flex h-9 items-center justify-center gap-2 rounded-md px-3.5 text-sm font-medium transition active:translate-y-px max-md:h-auto max-md:min-h-11 max-md:max-w-full max-md:px-2.5 max-md:py-2 max-md:text-center max-md:text-xs";
 const PANEL_BUTTON = {
   primary: `${PANEL_BUTTON_BASE} bg-accent text-on-accent hover:bg-accent-hover`,
   secondary: `${PANEL_BUTTON_BASE} border border-foreground/20 bg-background/40 text-foreground hover:bg-elevated`,
@@ -207,7 +216,7 @@ function FinishedPanel({
 
   return (
     <div className="pointer-events-auto w-full max-w-lg motion-safe:animate-fade-in-up">
-      <p className="mb-3 truncate text-center text-sm text-foreground/75">
+      <p className="mb-3 truncate text-center text-sm text-foreground/75 max-md:line-clamp-2 max-md:whitespace-normal">
         You finished <span className="font-medium text-foreground">{finishedName}</span>
       </p>
       <div className="flex items-center gap-4 rounded-xl bg-background/85 p-3 shadow-2xl ring-1 shadow-black/50 ring-foreground/15 backdrop-blur-sm">
@@ -215,7 +224,7 @@ function FinishedPanel({
           href={upNext.href}
           tabIndex={-1}
           aria-hidden="true"
-          className="group relative w-44 shrink-0 max-sm:hidden"
+          className="group relative w-44 shrink-0 max-sm:hidden max-md:hidden"
         >
           <TmdbImage
             path={upNext.stillPath}
@@ -237,7 +246,7 @@ function FinishedPanel({
             {episodeCode(upNext.seasonNumber, upNext.episodeNumber)}
             {upNext.runtimeMinutes ? ` · ${formatRuntime(upNext.runtimeMinutes)}` : ""}
           </p>
-          <div className="mt-3 flex gap-2">
+          <div className="mt-3 flex gap-2 max-md:flex-wrap">
             <Link href={upNext.href} className={PANEL_BUTTON.primary}>
               <SkipForwardIcon className="size-4" />
               Play next
@@ -263,6 +272,8 @@ export default function SimulatedPlayer({
   const playback = usePlayback(duration, autoplay);
   const { playing, position, completed } = playback;
   const containerRef = useRef<HTMLDivElement>(null);
+  const controls = useAutoHideControls(containerRef, playing);
+  const mobileFullscreen = useMobileFullscreen(containerRef, content.key);
   const fullscreen = useSyncExternalStore(
     subscribeToFullscreen,
     () => document.fullscreenElement !== null,
@@ -279,6 +290,10 @@ export default function SimulatedPlayer({
     upNext !== null && playing && duration - position <= UP_NEXT_LEAD_SECONDS;
 
   function toggleFullscreen() {
+    if (window.matchMedia("(width < 768px)").matches) {
+      void mobileFullscreen.toggle();
+      return;
+    }
     if (document.fullscreenElement) void document.exitFullscreen();
     else void containerRef.current?.requestFullscreen().catch(() => {});
   }
@@ -307,9 +322,20 @@ export default function SimulatedPlayer({
       aria-roledescription="video player"
       tabIndex={-1}
       onKeyDown={handleKeyDown}
-      className="relative isolate flex aspect-video w-full flex-col overflow-hidden rounded-xl bg-surface ring-1 ring-line select-none focus:outline-none [&:fullscreen]:aspect-auto [&:fullscreen]:rounded-none [&:fullscreen]:ring-0"
+      data-completed={completed}
+      data-controls-hidden={controls.hidden}
+      className={`relative isolate flex aspect-video w-full flex-col overflow-hidden rounded-xl bg-surface ring-1 ring-line select-none focus:outline-none [&:fullscreen]:aspect-auto [&:fullscreen]:rounded-none [&:fullscreen]:ring-0 ${styles.player}`}
     >
-      <ViewerBackdrop image={content.backdrop} />
+      <div className={`contents ${styles.picture}`}>
+      <div className={`contents ${styles.backdrop}`}>
+        <ViewerBackdrop image={content.backdrop} />
+      </div>
+      {fullscreen && (
+        <Link href={content.detailsHref} className={`hidden text-foreground/90 ${styles.fullscreenBack}`}>
+          <ArrowLeftIcon className="size-4 shrink-0" />
+          {isEpisode ? "Back to episodes" : "Back to title"}
+        </Link>
+      )}
       <div
         aria-hidden="true"
         className={`absolute inset-0 bg-background/50 transition-opacity duration-300 ${completed ? "opacity-100" : "opacity-0"}`}
@@ -320,11 +346,13 @@ export default function SimulatedPlayer({
         type="button"
         tabIndex={-1}
         aria-hidden="true"
-        onClick={playback.togglePlay}
+        onClick={() => {
+          if (!controls.consumeWakeTap()) playback.togglePlay();
+        }}
         className="absolute inset-0 cursor-default"
       />
 
-      <div className="pointer-events-none relative flex items-start justify-between gap-4 p-4 sm:p-6">
+      <div className={`pointer-events-none relative flex items-start justify-between gap-4 p-4 sm:p-6 ${styles.header}`}>
         <div className="min-w-0">
           {isEpisode && (
             <p className="truncate text-xs font-medium text-foreground/75 sm:text-sm">
@@ -342,13 +370,14 @@ export default function SimulatedPlayer({
             </p>
           )}
         </div>
-        <p className="flex shrink-0 items-center gap-1.5 text-[0.6875rem] font-medium tracking-[0.08em] text-foreground/70 uppercase">
+        <p className={`flex shrink-0 items-center gap-1.5 text-[0.6875rem] font-medium tracking-[0.08em] text-foreground/70 uppercase ${styles.badge}`}>
           <EchoWaveIcon className="size-3.5 text-accent" />
-          Simulated viewing
+          <span className="max-md:hidden">Simulated viewing</span>
+          <span className="hidden max-md:inline">Simulated</span>
         </p>
       </div>
 
-      <div className="pointer-events-none relative flex flex-1 items-center justify-center px-4">
+      <div className={`pointer-events-none relative flex flex-1 items-center justify-center px-4 ${styles.center}`}>
         {completed ? (
           <FinishedPanel content={content} onReplay={playback.restart} />
         ) : (
@@ -357,7 +386,7 @@ export default function SimulatedPlayer({
               type="button"
               aria-label={position > 0 ? "Resume" : "Play"}
               onClick={playback.togglePlay}
-              className="pointer-events-auto flex size-14 items-center justify-center rounded-full bg-background/60 text-foreground ring-1 ring-foreground/25 transition-colors hover:bg-accent hover:text-on-accent hover:ring-accent sm:size-18"
+              className={`pointer-events-auto flex size-14 items-center justify-center rounded-full bg-background/60 text-foreground ring-1 ring-foreground/25 transition-colors hover:bg-accent hover:text-on-accent hover:ring-accent sm:size-18 ${styles.pausedControl}`}
             >
               <PlayIcon className="size-6 sm:size-8" />
             </button>
@@ -366,40 +395,41 @@ export default function SimulatedPlayer({
       </div>
 
       {showUpNextHint && (
-        <div className="pointer-events-none relative flex justify-end px-4 sm:px-6 max-sm:hidden">
+        <div className="pointer-events-none relative flex justify-end px-4 sm:px-6 max-sm:hidden max-md:hidden">
           <div className="pointer-events-auto w-72 motion-safe:animate-fade-in-up">
             <UpNextCard upNext={upNext} />
           </div>
         </div>
       )}
+      </div>
 
-      <div className="relative px-3 pt-2 pb-2 sm:px-5 sm:pb-3">
+      <div className={`relative px-3 pt-2 pb-2 sm:px-5 sm:pb-3 ${styles.controls}`}>
         <SeekBar position={position} duration={duration} onSeek={playback.seek} />
-        <div className="mt-1 flex items-center gap-1">
+        <div className={`mt-1 flex items-center gap-1 ${styles.controlsRow}`}>
           <ControlButton label={playing ? "Pause" : "Play"} onClick={playback.togglePlay}>
             {playing ? <PauseIcon className="size-5" /> : <PlayIcon className="size-5" />}
           </ControlButton>
           <ControlButton label="Restart from the beginning" onClick={playback.restart}>
             <RestartIcon className="size-5" />
           </ControlButton>
-          <p className="ml-2 text-xs text-foreground/85 tabular-nums sm:text-sm">
+          <p className={`ml-2 text-xs text-foreground/85 tabular-nums sm:text-sm ${styles.time}`}>
             <span className="sr-only">Elapsed </span>
-            {formatPlaybackTime(position)}
+            <span className={styles.timestamp}>{formatPlaybackTime(position)}</span>
             <span className="text-foreground/50"> / </span>
             <span className="sr-only">of </span>
-            {formatPlaybackTime(duration)}
+            <span className={styles.timestamp}>{formatPlaybackTime(duration)}</span>
             {content.runtimeEstimated && (
-              <span className="text-foreground/50 max-sm:hidden"> · estimated runtime</span>
+              <span className="text-foreground/50 max-sm:hidden max-md:hidden"> · estimated runtime</span>
             )}
           </p>
 
-          <div className="ml-auto flex items-center gap-1">
+          <div className={`ml-auto flex items-center gap-1 ${styles.extraControls}`}>
             {upNext && !completed && (
               <Link
                 href={upNext.href}
                 aria-label={`Next episode: ${upNext.name}`}
                 title={`Next: ${upNext.name}`}
-                className="flex h-10 items-center gap-2 rounded-md px-2.5 text-sm font-medium text-foreground/90 transition-colors hover:bg-foreground/10 hover:text-foreground"
+                className={`flex h-10 items-center gap-2 rounded-md px-2.5 text-sm font-medium text-foreground/90 transition-colors hover:bg-foreground/10 hover:text-foreground ${styles.nextControl}`}
               >
                 <SkipForwardIcon className="size-5" />
                 <span className="max-sm:hidden">Next episode</span>
@@ -409,6 +439,8 @@ export default function SimulatedPlayer({
               <ControlButton
                 label={fullscreen ? "Exit full screen" : "Full screen"}
                 onClick={toggleFullscreen}
+                mobileText={fullscreen ? "Exit full screen" : "Full screen"}
+                className={styles.fullscreenControl}
               >
                 {fullscreen ? (
                   <MinimizeIcon className="size-5" />
@@ -419,6 +451,9 @@ export default function SimulatedPlayer({
             )}
           </div>
         </div>
+        {mobileFullscreen.message && (
+          <p role="status" className={`hidden max-md:block ${styles.message}`}>{mobileFullscreen.message}</p>
+        )}
       </div>
     </div>
   );

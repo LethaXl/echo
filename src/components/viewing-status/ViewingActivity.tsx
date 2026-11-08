@@ -6,6 +6,7 @@ import { ArrowUpDownIcon, CircleCheckIcon, ClapperboardIcon, EyeIcon, LayersIcon
 import { FilterMenu, MenuOption } from "@/components/media/BrowseFilterBar";
 import { RESULTS_GRID_CLASS_NAME } from "@/components/media/BrowseResultsSkeleton";
 import MediaCard from "@/components/media/MediaCard";
+import MobileCollectionFilters from "@/components/media/MobileCollectionFilters";
 import MediaSearchField from "@/components/media/MediaSearchField";
 import ViewingStatusControl from "./ViewingStatusControl";
 import { filterViewingActivity, type ViewingFilter, type ViewingItem } from "@/lib/viewing-status/model";
@@ -45,16 +46,16 @@ export default function ViewingActivity({ items }: { items: ViewingItem[] }) {
           </p>
         </div>
         {items.length > 0 && (
-          <div className="flex flex-wrap items-center gap-2.5">
-            <div role="group" aria-label="Filter viewing status" className="flex h-9 rounded-full border border-accent/30 bg-accent/10 p-[3px]">
+          <div className="flex flex-wrap items-center gap-2.5 max-md:relative max-md:[&_input]:pr-28 max-md:[&_input:placeholder-shown]:pr-14 max-md:[&_button[aria-label^=Clear]]:right-14 max-md:grid max-md:w-full max-md:grid-cols-[minmax(0,1fr)_auto] max-md:gap-2">
+            <div role="group" aria-label="Filter viewing status" className="flex h-9 max-md:hidden max-md:order-1 max-md:col-span-2 max-md:h-11 max-md:w-full rounded-full border border-accent/30 bg-accent/10 p-[3px]">
               {options.map(({ value, label, Icon }) => (
                 <button key={value} type="button" aria-pressed={filter === value} onClick={() => setFilter(value)}
-                  className={`flex items-center gap-1.5 rounded-full px-3 text-[13px] font-semibold transition-colors ${filter === value ? "bg-accent text-on-accent" : "text-muted hover:text-foreground"}`}>
-                  <Icon className="size-3.5" />{label}
+                  className={`flex items-center gap-1.5 rounded-full px-3 max-md:flex-1 max-md:justify-center max-md:px-2 text-[13px] font-semibold transition-colors ${filter === value ? "bg-accent text-on-accent" : "text-muted hover:text-foreground"}`}>
+                  <Icon className="size-3.5 max-md:hidden" />{label}
                 </button>
               ))}
             </div>
-            <FilterMenu icon={<selectedType.Icon className="size-3.5" />} label="Type"
+            <FilterMenu icon={<selectedType.Icon className="size-3.5" />} label="Type" className="max-md:hidden"
               value={selectedType.label} active={type !== "all"} panelClassName="w-36">
               {CONTENT_TYPES.map((option) => (
                 <MenuOption key={option.value} selected={type === option.value} onSelect={() => setType(option.value)}>
@@ -62,13 +63,13 @@ export default function ViewingActivity({ items }: { items: ViewingItem[] }) {
                 </MenuOption>
               ))}
             </FilterMenu>
-            <div role="search" aria-label="Viewing activity" className="w-60 max-w-full">
+            <div role="search" aria-label="Viewing activity" className="w-60 max-w-full max-md:col-span-2 max-md:order-first max-md:min-w-0 max-md:w-full">
               <MediaSearchField inputRef={search} label="Search viewing activity" placeholder="Search tracked titles"
                 value={query} onChange={setQuery} onClear={clearSearch} />
             </div>
             <FilterMenu
               icon={<ArrowUpDownIcon className="size-3.5" />}
-              label="Sort"
+              label="Sort" className="max-md:hidden" triggerClassName="max-md:[&>span:last-of-type]:hidden"
               value={WATCHLIST_SORTS[sort]}
               active
               align="right"
@@ -80,6 +81,8 @@ export default function ViewingActivity({ items }: { items: ViewingItem[] }) {
                 </MenuOption>
               ))}
             </FilterMenu>
+            <MobileCollectionFilters title="Refine viewing activity" type={type} sort={sort} defaultSort="recent" sorts={WATCHLIST_SORTS} status={filter}
+              onApply={(next) => { setType(next.type); setSort(next.sort); setFilter(next.status ?? "all"); }} />
           </div>
         )}
       </div>
@@ -101,7 +104,7 @@ export default function ViewingActivity({ items }: { items: ViewingItem[] }) {
         <ul className={RESULTS_GRID_CLASS_NAME}>
           {shown.map((item) => (
             <li key={item.entryId} className="min-w-0">
-              <MediaCard item={item} titleAction={
+              <MediaCard item={item} showMobileTmdbRating={false} titleAction={
                 <ViewingStatusControl item={item} status={item.status} compact />
               } />
               {item.unavailable && <p className="mt-2 text-xs text-muted">Metadata unavailable. You can still clear this status.</p>}

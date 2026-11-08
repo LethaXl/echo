@@ -16,10 +16,10 @@ export default async function AdminSubscriptionsPage() {
   await requireAdmin("/admin/subscriptions");
 
   return (
-    <div data-layout="wide" className="motion-safe:animate-fade-in-up">
+    <div data-layout="wide" className="motion-safe:animate-fade-in-up max-md:[overflow-wrap:anywhere] max-md:[&>a:first-child]:min-h-11 max-md:[&>div>a:first-child]:min-h-11">
       <div className="mx-auto w-full max-w-3xl">
         <DetailsBackLink href="/admin" label="Back to Admin Panel" />
-        <h1 className="mt-5 text-2xl font-semibold tracking-tight">Subscription Overview</h1>
+        <h1 className="mt-5 text-2xl font-semibold tracking-tight max-md:mt-3">Subscription Overview</h1>
         <p className="mt-1.5 text-sm text-muted">A snapshot of Echo&apos;s members and subscriptions.</p>
         {/* Inside the page rather than a loading.tsx, so non-admins still get a real 404. */}
         <Suspense fallback={<StatsSkeleton />}>
@@ -54,8 +54,8 @@ async function Stats() {
   ].map((segment) => ({ ...segment, percent: percentOf(segment.value, stats.totalUsers) }));
 
   return (
-    <div className="mt-8 flex flex-col gap-4">
-      <dl className="grid gap-4 sm:grid-cols-2">
+    <div className="mt-8 flex flex-col gap-4 max-md:mt-5 max-md:gap-3">
+      <dl className="grid gap-4 sm:grid-cols-2 max-md:grid-cols-2 max-md:gap-3">
         <SummaryCard label="Total Users" value={stats.totalUsers} />
         <SummaryCard
           label="Total Echo+ Subscribers"
@@ -65,7 +65,7 @@ async function Stats() {
         />
       </dl>
 
-      <section aria-labelledby="distribution-heading" className={`${CARD} px-7 py-6`}>
+      <section aria-labelledby="distribution-heading" className={`${CARD} px-7 py-6 max-md:px-4 max-md:py-4`}>
         <h2 id="distribution-heading" className="text-[1.0625rem] font-semibold tracking-tight">
           Membership Distribution
         </h2>
@@ -75,7 +75,7 @@ async function Stats() {
           aria-label={segments
             .map((segment) => `${segment.label} ${Math.round(segment.percent)}%`)
             .join(", ")}
-          className="mt-5 flex h-3 overflow-hidden rounded-full bg-background"
+          className="mt-5 flex h-3 overflow-hidden rounded-full bg-background max-md:mt-4"
         >
           {segments.map(
             (segment) =>
@@ -89,14 +89,14 @@ async function Stats() {
           )}
         </div>
 
-        <dl className="mt-6 grid gap-4 border-t border-line pt-5 sm:grid-cols-3">
+        <dl className="mt-6 grid gap-4 border-t border-line pt-5 sm:grid-cols-3 max-md:mt-4 max-md:grid-cols-1 max-md:gap-3 max-md:pt-3">
           {segments.map((segment) => (
-            <div key={segment.label}>
+            <div key={segment.label} className="max-md:flex max-md:items-center max-md:justify-between max-md:gap-3">
               <dt className="flex items-center gap-2 text-sm text-muted">
                 <span aria-hidden="true" className={`size-2.5 shrink-0 rounded-full ${segment.color}`} />
                 {segment.label}
               </dt>
-              <dd className="mt-2 flex items-baseline gap-2">
+              <dd className="mt-2 flex items-baseline gap-2 max-md:mt-0 max-md:shrink-0">
                 <span className="text-2xl leading-none font-semibold tracking-tight tabular-nums">
                   {formatCount(segment.value)}
                 </span>
@@ -124,13 +124,13 @@ function SummaryCard({
   highlighted?: boolean;
 }) {
   return (
-    <div className={`${CARD} px-7 py-6 ${highlighted ? "border-accent/40" : ""}`}>
-      <dt className="text-sm text-muted">{label}</dt>
-      <dd className="mt-3 flex items-baseline gap-3">
-        <span className="text-[2.75rem] leading-none font-semibold tracking-tight tabular-nums">
+    <div className={`${CARD} px-7 py-6 max-md:min-w-0 max-md:px-3 max-md:py-3 ${highlighted ? "border-accent/40" : ""}`}>
+      <dt className="text-sm text-muted max-md:min-h-8 max-md:text-xs">{label}</dt>
+      <dd className="mt-3 flex items-baseline gap-3 max-md:mt-2 max-md:flex-col max-md:items-start max-md:gap-1">
+        <span className="text-[2.75rem] leading-none font-semibold tracking-tight tabular-nums max-md:max-w-full max-md:text-[clamp(1.25rem,6vw,1.75rem)] max-md:[overflow-wrap:anywhere]">
           {formatCount(value)}
         </span>
-        {note && <span className="text-sm text-accent">{note}</span>}
+        {note && <span className="text-sm text-accent max-md:text-xs">{note}</span>}
       </dd>
     </div>
   );
@@ -138,16 +138,16 @@ function SummaryCard({
 
 function StatsSkeleton() {
   return (
-    <div role="status" aria-label="Loading statistics" className="mt-8 flex flex-col gap-4">
-      <div className="grid gap-4 sm:grid-cols-2">
+    <div role="status" aria-label="Loading statistics" className="mt-8 flex flex-col gap-4 max-md:mt-5 max-md:gap-3">
+      <div className="grid gap-4 sm:grid-cols-2 max-md:grid-cols-2 max-md:gap-3">
         {[0, 1].map((index) => (
-          <div key={index} className={`${CARD} px-7 py-6`}>
-            <div className="h-4 w-28 animate-pulse rounded bg-elevated" />
-            <div className="mt-4 h-10 w-20 animate-pulse rounded bg-elevated" />
+          <div key={index} className={`${CARD} px-7 py-6 max-md:min-w-0 max-md:px-3 max-md:py-3`}>
+            <div className="h-4 w-28 animate-pulse rounded bg-elevated max-md:max-w-full" />
+            <div className="mt-4 h-10 w-20 animate-pulse rounded bg-elevated max-md:mt-2 max-md:h-7 max-md:max-w-full" />
           </div>
         ))}
       </div>
-      <div className={`${CARD} px-7 py-6`}>
+      <div className={`${CARD} px-7 py-6 max-md:px-4 max-md:py-4`}>
         <div className="h-5 w-48 animate-pulse rounded bg-elevated" />
         <div className="mt-5 h-3 animate-pulse rounded-full bg-elevated" />
         <div className="mt-6 grid gap-4 border-t border-line pt-5 sm:grid-cols-3">

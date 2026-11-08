@@ -65,7 +65,7 @@ export default function SeekBar({ position, duration, onSeek }: SeekBarProps) {
       }}
       onPointerUp={() => setDragging(false)}
       onPointerCancel={() => setDragging(false)}
-      className="group/seek flex h-5 cursor-pointer touch-none items-center rounded-sm focus-visible:outline-offset-4"
+      className="group/seek flex h-5 cursor-pointer touch-none items-center rounded-sm focus-visible:outline-offset-4 max-md:h-11"
     >
       <div
         ref={trackRef}
